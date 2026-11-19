@@ -325,13 +325,96 @@ export function drawPixelSceneHumanlikeCreativity(
       color: string;
       at: number;
     }> = [
-      { id: 'lang', label: 'LANGUAGE', x: cx - 114, y: cy - 22, color: PAL.tealLight, at: 2.2 },
-      { id: 'logic', label: 'LOGIC', x: cx + 114, y: cy - 22, color: PAL.goldLight, at: 4.8 },
+      { id: 'lang', label: 'LANGUAGE', x: cx - 114, y: cy - 22, color: PAL.tealLight, at: 2.35 },
+      { id: 'logic', label: 'LOGIC', x: cx + 114, y: cy - 22, color: PAL.goldLight, at: 4.85 },
       { id: 'art', label: 'ART', x: cx - 114, y: cy + 26, color: PAL.coralLight, at: 5.75 },
-      { id: 'heart', label: 'EMPATHY', x: cx + 114, y: cy + 26, color: '#FF8FA3', at: 6.55 },
+      { id: 'heart', label: 'EMPATHY', x: cx + 114, y: cy + 26, color: '#FF8FA3', at: 6.7 },
     ];
 
-    // Central warm pulsing 16-bit Soul Heart-Brain Emblem
+    // Pass 1: Staggered energy beams + elastic unfurling module cards (drawn behind center heart!)
+    const bw = 96;
+    const bh = 34;
+    for (let idx = 0; idx < pillars.length; idx++) {
+      const p = pillars[idx];
+      const dt = localTime - p.at;
+      if (dt <= 0) continue;
+
+      const isLeft = p.x < cx;
+      const beamP = easeOutExpo(clamp01(dt / 0.34));
+      const boxRaw = clamp01((dt - 0.18) / 0.44);
+      const boxPop = easeOutBack(boxRaw, 1.25);
+      const textP = clamp01((dt - 0.34) / 0.36);
+
+      // Anchor point on inner edge of the card where the energy conduit docks
+      const dockX = isLeft ? p.x + Math.floor(bw / 2) : p.x - Math.floor(bw / 2);
+      const beamEndX = Math.round(lerp(cx, dockX, beamP));
+      const beamEndY = Math.round(lerp(cy, p.y, beamP));
+      pxLine(g, cx, cy, beamEndX, beamEndY, p.color, beamP < 0.95 ? 2 : 1);
+
+      // Luminous comet head racing along the conduit during launch, then gentle living data pulse
+      if (beamP < 0.98) {
+        pxCircle(g, beamEndX, beamEndY, 3, PAL.cream);
+        pxRect(g, beamEndX - 1, beamEndY - 1, 2, 2, p.color);
+      } else {
+        const travel = (time * 1.45 + idx * 0.27) % 1;
+        const px = Math.round(lerp(cx, dockX, travel));
+        const py = Math.round(lerp(cy, p.y, travel));
+        pxRect(g, px - 1, py - 1, 3, 3, PAL.cream);
+      }
+
+      // Impact shockwave ring right when beam reaches module slot!
+      if (dt > 0.16 && dt < 0.72) {
+        const ringT = clamp01((dt - 0.16) / 0.56);
+        const ringR = Math.round(lerp(4, 24, easeOutCubic(ringT)));
+        if (ringT < 0.85) {
+          pxRing(g, p.x, p.y, ringR, ringT < 0.35 ? PAL.cream : p.color, 1);
+        }
+      }
+
+      // Elastic slide-and-unfurl module card!
+      if (boxRaw > 0.02) {
+        const slideOffset = Math.round((1 - easeOutCubic(boxRaw)) * (isLeft ? 20 : -20));
+        const floatY = boxRaw >= 1 ? Math.round(Math.sin(time * 2.6 + idx * 1.4) * 1.2) : 0;
+        const curW = Math.max(10, Math.min(bw + 4, Math.round(lerp(10, bw, Math.min(1.04, boxPop)))));
+        const curH = Math.max(6, Math.min(bh + 2, Math.round(lerp(6, bh, Math.min(1.04, boxPop)))));
+        const cardCx = p.x + slideOffset;
+        const cardCy = p.y + floatY;
+        const x0 = cardCx - Math.floor(curW / 2);
+        const y0 = cardCy - Math.floor(curH / 2);
+
+        // Brief warm glow flash as box locks open
+        if (dt > 0.18 && dt < 0.52) {
+          const glowR = Math.round(lerp(28, 12, (dt - 0.18) / 0.34));
+          drawDitheredGlow(g, cardCx, cardCy, glowR, p.color, 'light');
+        }
+
+        const isFlash = dt > 0.18 && dt < 0.31;
+        pxRect(g, x0, y0, curW, curH, isFlash ? '#24234A' : '#161430');
+        pxOutline(g, x0, y0, curW, curH, isFlash ? PAL.cream : p.color, 2);
+
+        // Inner emblem dot + typewriter label reveal once card unfurls enough
+        if (curW > bw * 0.65 && curH > bh * 0.65) {
+          const dotR = Math.max(1, Math.round(4 * clamp01((dt - 0.3) / 0.22)));
+          pxCircle(g, x0 + 13, cardCy, dotR, p.color);
+          if (dotR >= 3) {
+            pxRect(g, x0 + 12, cardCy - 1, 2, 2, PAL.cream);
+          }
+
+          if (textP > 0.05) {
+            const chars = Math.max(1, Math.ceil(p.label.length * textP));
+            const visibleText = p.label.slice(0, chars).padEnd(p.label.length, ' ');
+            pxBitmapText(g, visibleText, x0 + 56, cardCy, 1, p.color);
+          }
+        }
+
+        if (dt > 0.45) {
+          const spSize = 2 + (Math.floor(time * 5 + idx) % 2 === 0 ? 1 : 0);
+          pxSparkle(g, x0 + curW - 5, y0 - 4, spSize, PAL.goldLight);
+        }
+      }
+    }
+
+    // Pass 2: Central warm pulsing 16-bit Soul Heart-Brain Emblem (cleanly on top of beams!)
     const heartPulse = 1 + Math.sin(time * 6) * 0.08 + energy * 0.1;
     drawDitheredGlow(g, cx, cy, Math.round(42 * breakP * heartPulse), PAL.coralLight, 'medium');
     pxCircle(g, cx, cy, Math.round(22 * breakP), '#26183A');
@@ -358,27 +441,6 @@ export function drawPixelSceneHumanlikeCreativity(
         }
       }
     }
-
-    for (const p of pillars) {
-      const prog = easeOutBack(clamp01((localTime - p.at) / 0.55), 1.15);
-      if (prog <= 0.08) continue;
-
-      pxLine(g, cx, cy, p.x, p.y, p.color, 1);
-
-      const bw = 96;
-      const bh = 34;
-      const x0 = p.x - Math.floor(bw / 2);
-      const y0 = p.y - Math.floor(bh / 2);
-      pxRect(g, x0, y0, bw, bh, '#161430');
-      pxOutline(g, x0, y0, bw, bh, p.color, 2);
-
-      // Tiny icon dot + crisp label
-      pxCircle(g, x0 + 13, p.y, 4, p.color);
-      pxBitmapText(g, p.label, x0 + 56, p.y, 1, p.color);
-      if (localTime > p.at + 0.35) {
-        pxSparkle(g, x0 + bw - 6, y0 - 4, 2, PAL.goldLight);
-      }
-    }
   }
 }
 
@@ -396,8 +458,7 @@ export function drawPixelSceneSparkToWorldTree(
 ): void {
   const cx = Math.floor(pw * 0.5);
   const groundY = Math.floor(ph * 0.78);
-  const growP = easeOutExpo(clamp01((localTime - 1.35) / 2.6));
-  const fruitP = smoothstep(3.2, 4.9, localTime);
+  const growP = easeOutExpo(clamp01((localTime - 1.35) / 2.4));
 
   // Warm golden-emerald twilight sky
   drawDitheredSky(g, pw, ph, [
@@ -456,32 +517,114 @@ export function drawPixelSceneSparkToWorldTree(
         if (br > 2) pxCircle(g, bx, by, br, col);
       }
 
-      // Glowing industry fruits ("赋能千行百业") perched across the canopy!
-      if (fruitP > 0.08) {
-        const badges: Array<{ label: string; x: number; y: number; col: string }> = [
-          { label: 'MED', x: cx - 78, y: canopyY + 6, col: PAL.coralLight },
-          { label: 'CODE', x: cx - 74, y: canopyY + 30, col: PAL.tealLight },
-          { label: 'SCI', x: cx + 78, y: canopyY + 6, col: PAL.goldLight },
-          { label: 'ART', x: cx + 74, y: canopyY + 30, col: PAL.iceLight },
-        ];
-        for (const b of badges) {
-          pxLine(g, cx, canopyY + 8, b.x, b.y, 'rgba(255, 224, 138, 0.38)', 1);
-          pxRect(g, b.x - 20, b.y - 8, 40, 16, '#0E1C2E');
-          pxOutline(g, b.x - 20, b.y - 8, 40, 16, b.col, 1);
-          pxBitmapText(g, b.label, b.x, b.y, 1, b.col);
+      // Staggered golden branches sprouting -> blooming into 4 industry fruit-badges ("赋能千行百业")!
+      const badges: Array<{ label: string; x: number; y: number; col: string; at: number }> = [
+        { label: 'MED', x: cx - 80, y: canopyY + 6, col: PAL.coralLight, at: 2.6 },
+        { label: 'SCI', x: cx + 80, y: canopyY + 6, col: PAL.goldLight, at: 3.0 },
+        { label: 'CODE', x: cx - 76, y: canopyY + 30, col: PAL.tealLight, at: 3.4 },
+        { label: 'ART', x: cx + 76, y: canopyY + 30, col: PAL.iceLight, at: 3.8 },
+      ];
+
+      for (let i = 0; i < badges.length; i++) {
+        const b = badges[i];
+        const dt = localTime - b.at;
+        if (dt <= 0) continue;
+
+        const isLeft = b.x < cx;
+        const branchP = easeOutExpo(clamp01(dt / 0.3));
+        const bloomRaw = clamp01((dt - 0.2) / 0.42);
+        const bloomPop = easeOutBack(bloomRaw, 1.3);
+        const textP = clamp01((dt - 0.36) / 0.28);
+
+        // Gentle organic sway once settled on the canopy
+        const swayY = bloomRaw >= 1 ? Math.round(Math.sin(time * 2.5 + i * 1.6) * 1.3) : 0;
+        const targetY = b.y + swayY;
+        const dockX = isLeft ? b.x + 21 : b.x - 21;
+
+        // Stage 1: Luminous golden branch extending out from canopy heart with glowing bud tip
+        const endX = Math.round(lerp(cx, dockX, branchP));
+        const endY = Math.round(lerp(canopyY + 8, targetY, branchP));
+        pxLine(g, cx, canopyY + 8, endX, endY, branchP < 0.95 ? PAL.goldLight : 'rgba(255, 224, 138, 0.5)', 1);
+
+        if (branchP < 0.96) {
+          pxCircle(g, endX, endY, 3, PAL.cream);
+          pxCircle(g, endX, endY, 2, b.col);
+        } else {
+          // Living fruit-node orb pulsing where the branch attaches to the badge
+          pxCircle(g, dockX, targetY, 2, b.col);
+          pxRect(g, dockX, targetY - 1, 1, 1, PAL.cream);
+        }
+
+        // Stage 2: 4-petal golden pixel blossom burst right on bloom impact
+        if (dt > 0.18 && dt < 0.68) {
+          const burstT = clamp01((dt - 0.18) / 0.5);
+          const dist = Math.round(lerp(4, 24, easeOutCubic(burstT)));
+          const petalDirs: Array<[number, number]> = [
+            [-1, -1],
+            [1, -1],
+            [-1, 1],
+            [1, 1],
+          ];
+          for (const [dx, dy] of petalDirs) {
+            pxRect(
+              g,
+              b.x + dx * dist,
+              targetY + Math.round(dy * dist * 0.55),
+              burstT < 0.5 ? 2 : 1,
+              burstT < 0.5 ? 2 : 1,
+              burstT < 0.4 ? PAL.cream : b.col
+            );
+          }
+        }
+
+        // Stage 3: Elastic unfurling industry badge card
+        if (bloomRaw > 0.02) {
+          const fullW = 42;
+          const fullH = 16;
+          const curW = Math.max(6, Math.min(fullW + 2, Math.round(lerp(6, fullW, Math.min(1.05, bloomPop)))));
+          const curH = Math.max(4, Math.min(fullH + 2, Math.round(lerp(4, fullH, Math.min(1.05, bloomPop)))));
+          const slideX = Math.round((1 - easeOutCubic(bloomRaw)) * (isLeft ? 12 : -12));
+          const cardX = b.x + slideX;
+          const isFlash = dt > 0.2 && dt < 0.31;
+
+          pxRect(g, cardX - Math.floor(curW / 2), targetY - Math.floor(curH / 2), curW, curH, isFlash ? '#1B384A' : '#0E1C2E');
+          pxOutline(g, cardX - Math.floor(curW / 2), targetY - Math.floor(curH / 2), curW, curH, isFlash ? PAL.cream : b.col, 1);
+
+          if (curW > fullW * 0.7 && textP > 0.05) {
+            const chars = Math.max(1, Math.ceil(b.label.length * textP));
+            pxBitmapText(g, b.label.slice(0, chars).padEnd(b.label.length, ' '), cardX, targetY, 1, b.col);
+          }
         }
       }
     }
   }
 
-  // Left/Right era anchors flanking the trunk
-  pxRect(g, 20, groundY - 20, 44, 16, '#0D1729');
-  pxOutline(g, 20, groundY - 20, 44, 16, PAL.gold, 1);
-  pxBitmapText(g, '1956', 42, groundY - 12, 1, PAL.goldLight);
+  // Animated Left/Right era anchors flanking the trunk (1956 unfolds at start; 80 YRS on "AI用了近八十年"!)
+  const p1956 = easeOutBack(clamp01((localTime - 0.25) / 0.55), 1.15);
+  if (p1956 > 0.05) {
+    const w56 = Math.max(6, Math.min(44, Math.round(44 * Math.min(1, p1956))));
+    const x56 = 42 - Math.floor(w56 / 2);
+    pxRect(g, x56, groundY - 20, w56, 16, '#0D1729');
+    pxOutline(g, x56, groundY - 20, w56, 16, PAL.gold, 1);
+    if (w56 >= 32) {
+      pxBitmapText(g, '1956', 42, groundY - 12, 1, PAL.goldLight);
+    }
+  }
 
-  pxRect(g, pw - 64, groundY - 20, 44, 16, '#0D1729');
-  pxOutline(g, pw - 64, groundY - 20, 44, 16, PAL.tealLight, 1);
-  pxBitmapText(g, '80 YRS', pw - 42, groundY - 12, 1, PAL.tealLight);
+  const p80 = easeOutBack(clamp01((localTime - 4.75) / 0.55), 1.2);
+  if (p80 > 0.05) {
+    const w80 = Math.max(6, Math.min(46, Math.round(46 * Math.min(1, p80))));
+    const x80 = pw - 42 - Math.floor(w80 / 2);
+    const isFlash80 = localTime > 4.75 && localTime < 4.95;
+    pxRect(g, x80, groundY - 20, w80, 16, isFlash80 ? '#183846' : '#0D1729');
+    pxOutline(g, x80, groundY - 20, w80, 16, isFlash80 ? PAL.cream : PAL.tealLight, 1);
+    if (w80 >= 34) {
+      pxBitmapText(g, '80 YRS', pw - 42, groundY - 12, 1, PAL.tealLight);
+    }
+    if (localTime > 5.05) {
+      pxSparkle(g, pw - 20, groundY - 22, 2 + (Math.floor(time * 5) % 2), PAL.goldLight);
+    }
+  }
 }
 
 // ============================================================================
@@ -752,35 +895,129 @@ export function drawPixelSceneWitnessAndWriterFinale(
   pxPineTree(g, pw - 26, horizonY + 6, 22, '#0E1830', '#162642');
   pxPineTree(g, pw - 44, horizonY + 8, 16, '#0E1830', '#162642');
 
-  // 3 Pixel Humans ("我们每个人") standing side-by-side on the sunlit ridge!
-  const people: Array<{ x: number; h: number }> = [
-    { x: cx - 18, h: 16 },
-    { x: cx, h: 18 },
-    { x: cx + 18, h: 16 },
-  ];
-  for (const person of people) {
-    const py = horizonY + 2;
-    const topY = py - person.h;
-    // Distinct head with warm dawn rim highlight
-    pxRect(g, person.x - 1, topY, 3, 4, '#111930');
-    pxRect(g, person.x - 1, topY, 3, 1, PAL.goldLight);
-    // Neck + broader shoulders + arms
-    pxRect(g, person.x, topY + 4, 1, 1, '#111930');
-    pxRect(g, person.x - 4, topY + 5, 9, 2, '#111930');
-    pxRect(g, person.x - 4, topY + 5, 9, 1, 'rgba(255, 224, 138, 0.55)');
-    pxRect(g, person.x - 3, topY + 7, 7, 5, '#111930');
-    // Left & right legs planted firmly on the hill
-    pxRect(g, person.x - 3, topY + 12, 2, person.h - 12, '#111930');
-    pxRect(g, person.x + 2, topY + 12, 2, person.h - 12, '#111930');
+  // 3 Pixel Humans ("我们每个人") stepping smoothly onto the sunlit ridge!
+  const peopleRise = easeOutCubic(clamp01((localTime - 0.7) / 0.95));
+  if (peopleRise > 0.02) {
+    const people: Array<{ x: number; h: number }> = [
+      { x: cx - 18, h: 16 },
+      { x: cx, h: 18 },
+      { x: cx + 18, h: 16 },
+    ];
+    for (const person of people) {
+      const riseOffset = Math.round((1 - peopleRise) * 8);
+      const py = horizonY + 2 + riseOffset;
+      const topY = py - person.h;
+      // Distinct head with warm dawn rim highlight
+      pxRect(g, person.x - 1, topY, 3, 4, '#111930');
+      pxRect(g, person.x - 1, topY, 3, 1, PAL.goldLight);
+      // Neck + broader shoulders + arms
+      pxRect(g, person.x, topY + 4, 1, 1, '#111930');
+      pxRect(g, person.x - 4, topY + 5, 9, 2, '#111930');
+      pxRect(g, person.x - 4, topY + 5, 9, 1, 'rgba(255, 224, 138, 0.55)');
+      pxRect(g, person.x - 3, topY + 7, 7, 5, '#111930');
+      // Left & right legs planted firmly on the hill
+      pxRect(g, person.x - 3, topY + 12, 2, person.h - 12, '#111930');
+      pxRect(g, person.x + 2, topY + 12, 2, person.h - 12, '#111930');
+    }
   }
 
-  // Crisp final chronological tribute plaque above horizon when "未来的书写者" lands!
-  if (writeP > 0.35) {
-    const bw = 114;
-    const bh = 18;
+  // Creative Signature Finale Animation for "1950 - FUTURE":
+  // 1) Gilded horizon ribbon draws outward from center with sparkling weld-tips (2.25–2.90s)
+  // 2) Left locks "1950", center dash sweeps across, right rolls through 80 years of AI milestones (2.75–3.82s)
+  // 3) Right on "也是未来的书写者" (3.85s), a golden star-stylus sweeps across transforming 2026 -> FUTURE with stardust & halo!
+  if (localTime >= 2.25) {
+    const bw = 124;
+    const bh = 20;
     const by = Math.floor(ph * 0.56);
-    pxRect(g, cx - Math.floor(bw / 2), by - 9, bw, bh, '#0C142B');
-    pxOutline(g, cx - Math.floor(bw / 2), by - 9, bw, bh, PAL.goldLight, 1);
-    pxBitmapText(g, '1950 - FUTURE', cx, by, 1, PAL.goldLight);
+    const frameP = easeOutExpo(clamp01((localTime - 2.25) / 0.62));
+    const heightP = easeOutCubic(clamp01((localTime - 2.38) / 0.42));
+    const curW = Math.max(8, Math.round(bw * frameP));
+    const curH = Math.max(4, Math.round(bh * heightP));
+    const halfW = Math.floor(curW / 2);
+    const halfH = Math.floor(curH / 2);
+
+    // Expanding celebratory golden dawn halo right when FUTURE ignites (t = 3.85–4.75s)!
+    if (localTime > 3.84 && localTime < 4.95) {
+      const haloT = clamp01((localTime - 3.84) / 0.95);
+      const haloR = Math.round(lerp(10, 68, easeOutCubic(haloT)));
+      if (haloT < 0.88) {
+        pxRing(g, cx, by, haloR, haloT < 0.35 ? PAL.cream : PAL.goldLight, 1);
+      }
+      drawDitheredGlow(g, cx, by, Math.round(lerp(42, 24, haloT)), PAL.goldLight, 'light');
+    }
+
+    // Plaque backdrop + crisp gilded border
+    pxRect(g, cx - halfW, by - halfH, curW, curH, '#0C142B');
+    pxOutline(g, cx - halfW, by - halfH, curW, curH, PAL.goldLight, 1);
+
+    // Sparkling golden weld-tips while the plaque frame unfurls horizontally!
+    if (frameP < 0.98) {
+      pxSparkle(g, cx - halfW, by, 3, PAL.cream);
+      pxSparkle(g, cx + halfW, by, 3, PAL.cream);
+    }
+
+    if (curH >= 14 && curW >= 96) {
+      // Left anchor: "1950" types in cleanly without horizontal shift (2.60–2.92s)
+      const leftTextP = clamp01((localTime - 2.6) / 0.32);
+      if (leftTextP > 0.05) {
+        const s1950 = '1950'.slice(0, Math.max(1, Math.ceil(4 * leftTextP))).padEnd(4, ' ');
+        pxBitmapText(g, s1950, cx - 34, by, 1, PAL.cream);
+      }
+
+      // Center bridge: glowing pixel timeline beam sweeping left -> right (2.82–3.20s)
+      const dashP = easeOutCubic(clamp01((localTime - 2.82) / 0.36));
+      if (dashP > 0.02) {
+        const dashX0 = cx - 14;
+        const dashW = Math.max(2, Math.round(12 * dashP));
+        pxRect(g, dashX0, by, dashW, 2, PAL.tealLight);
+        if (dashP < 0.96) {
+          pxRect(g, dashX0 + dashW, by - 1, 2, 4, PAL.cream);
+        }
+      }
+
+      // Right slot: 80-Year Historical Odometer (1956 -> 2026) -> Star-Pen Sweep -> "FUTURE"!
+      const futureStart = 3.84;
+      if (localTime >= 2.95 && localTime < futureStart) {
+        const milestones = ['1956', '1974', '1986', '1997', '2012', '2016', '2022', '2026'];
+        const rollT = clamp01((localTime - 2.95) / (futureStart - 2.95));
+        const idx = Math.min(milestones.length - 1, Math.floor(rollT * milestones.length));
+        const stepFrac = (rollT * milestones.length) % 1;
+        const jitterY = stepFrac < 0.2 ? 1 : 0;
+        pxBitmapText(g, milestones[idx], cx + 26, by + jitterY, 1, idx >= 6 ? PAL.goldLight : PAL.tealLight);
+      } else if (localTime >= futureStart) {
+        const writeFutP = clamp01((localTime - futureStart) / 0.56);
+        const futWord = 'FUTURE';
+        const shown = Math.max(1, Math.ceil(futWord.length * writeFutP));
+        pxBitmapText(g, futWord.slice(0, shown).padEnd(futWord.length, ' '), cx + 26, by, 1, PAL.goldLight);
+
+        // Luminous golden star-pen tip tracking the exact right edge of the newly written character!
+        if (writeFutP < 0.99) {
+          const penTipX = Math.round(cx + 8 + writeFutP * 36);
+          pxSparkle(g, penTipX, by, 3, PAL.cream);
+          pxRect(g, penTipX - 2, by - 4, 2, 9, 'rgba(255, 246, 214, 0.55)');
+        }
+
+        // Rising golden stardust drifting gracefully from the finished plaque into the sky!
+        for (let s = 0; s < 8; s++) {
+          const seedT = (localTime - futureStart + s * 0.19) % 1.3;
+          const sx = cx - 44 + ((s * 17) % 92) + Math.round(Math.sin(time * 3 + s) * 3);
+          const sy = by - 10 - Math.round(seedT * 22);
+          if (sy > by - 32) {
+            pxRect(g, sx, sy, 1, 1, s % 2 === 0 ? PAL.goldLight : PAL.cream);
+          }
+        }
+      }
+
+      // Subtle gilded border shimmer sweep + corner diamond glints once complete (t > 4.25s)
+      if (localTime > 4.25) {
+        const sweepFrac = ((localTime - 4.25) * 0.75) % 1;
+        const glintX = Math.round(lerp(cx - halfW + 2, cx + halfW - 6, sweepFrac));
+        pxRect(g, glintX, by - halfH, 5, 1, PAL.cream);
+        pxRect(g, cx + halfW - (glintX - (cx - halfW)) - 5, by + halfH, 5, 1, PAL.cream);
+        const pulseStar = 2 + (Math.floor(time * 4) % 2);
+        pxSparkle(g, cx - halfW, by - halfH, pulseStar, PAL.goldLight);
+        pxSparkle(g, cx + halfW, by + halfH, pulseStar, PAL.tealLight);
+      }
+    }
   }
 }
