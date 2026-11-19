@@ -47,6 +47,13 @@ const HIGHLIGHT_JUMPS = [
   { label: '人类智力最后堡垒', time: 252.5 },
   { label: '现代 AI 狂飙序幕', time: 258.5 },
   { label: '第五阶段 · AGI 曙光', time: 269.5 },
+  { label: 'Transformer · ChatGPT', time: 275.0 },
+  { label: '多模态全能 AI', time: 279.8 },
+  { label: '艺术与情感共鸣', time: 288.6 },
+  { label: '星星之火成大树', time: 294.2 },
+  { label: '文明工业革命', time: 300.2 },
+  { label: '寒冬沉淀与革新', time: 307.6 },
+  { label: '见证者与书写者', time: 313.5 },
 ];
 
 export function EditorialPanel({
@@ -102,7 +109,7 @@ export function EditorialPanel({
           </div>
           <a
             href={exportStatus.downloadUrl}
-            download={`AI发展史_16bit成片_271s_${settings.aspectRatio.replace(':', 'x')}.webm`}
+            download={`AI发展史_16bit完整成片_${settings.aspectRatio.replace(':', 'x')}.webm`}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -176,7 +183,7 @@ export function EditorialPanel({
         {activeTab === 'subtitles' && (
           <>
             <div className="flex items-center justify-between text-xs text-zinc-400 pb-1">
-              <span>前 271 秒口播 SRT · 共 {cues.length} 句</span>
+              <span>完整版口播 SRT · 共 {cues.length} 句</span>
               <span>点击台词跳转</span>
             </div>
 

@@ -31,7 +31,7 @@ interface TimelineDockProps {
 }
 
 const SPEED_OPTIONS = [0.75, 1, 1.25];
-const RULER_TICKS = [0, 30, 60, 90, 120, 150, 180, 210, 240, CLIP_DURATION];
+const RULER_TICKS = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, CLIP_DURATION];
 
 export function TimelineDock({
   currentTime,

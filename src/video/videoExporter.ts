@@ -119,7 +119,7 @@ export function startVideoExport(
         const url = URL.createObjectURL(blob);
         const ratioLabel = isPortrait ? '9x16' : '16x9';
         cleanup();
-        onComplete(url, `AI发展史_16bit成片_271s_${ratioLabel}.webm`);
+        onComplete(url, `AI发展史_16bit完整成片_${ratioLabel}.webm`);
       };
 
       recorder.onerror = () => {

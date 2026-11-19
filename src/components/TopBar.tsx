@@ -17,7 +17,7 @@ const CHAPTER_NAV: Array<{ id: string; label: string; start: number; end: number
   { id: 'winter', label: '幻灭寒冬', start: 95.733, end: 163.9, seekTo: 98.5 },
   { id: 'data', label: '数据深蓝', start: 163.9, end: 212.266, seekTo: 164.5 },
   { id: 'deeplearning', label: '深度学习', start: 212.266, end: 260.066, seekTo: 212.8 },
-  { id: 'agi', label: '大模型曙光', start: 260.066, end: 272.0, seekTo: 261.2 },
+  { id: 'agi', label: '大模型与终章', start: 260.066, end: 315.0, seekTo: 261.2 },
 ];
 
 export function TopBar({

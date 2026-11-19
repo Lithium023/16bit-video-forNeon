@@ -74,6 +74,15 @@ import {
   drawPixelSceneStageFiveAgiDawn,
 } from './retroPixelChapterSeven';
 import {
+  drawPixelSceneCivilizationRevolution,
+  drawPixelSceneHumanlikeCreativity,
+  drawPixelSceneMultimodalAi,
+  drawPixelSceneSparkToWorldTree,
+  drawPixelSceneTransformerLlm,
+  drawPixelSceneWinterAndBreakthrough,
+  drawPixelSceneWitnessAndWriterFinale,
+} from './retroPixelChapterEight';
+import {
   clamp01,
   easeInOutQuint,
   easeOutCubic,
@@ -1253,6 +1262,27 @@ function drawPixelWorldById(
       break;
     case 'stage-five-agi-dawn':
       drawPixelSceneStageFiveAgiDawn(g, pw, ph, time, localTime, energy);
+      break;
+    case 'transformer-llm-birth':
+      drawPixelSceneTransformerLlm(g, pw, ph, time, localTime, energy);
+      break;
+    case 'multimodal-allrounder':
+      drawPixelSceneMultimodalAi(g, pw, ph, time, localTime, energy);
+      break;
+    case 'humanlike-creativity':
+      drawPixelSceneHumanlikeCreativity(g, pw, ph, time, localTime, energy);
+      break;
+    case 'spark-to-world-tree':
+      drawPixelSceneSparkToWorldTree(g, pw, ph, time, localTime, energy);
+      break;
+    case 'civilization-revolution':
+      drawPixelSceneCivilizationRevolution(g, pw, ph, time, localTime, energy);
+      break;
+    case 'winter-and-breakthrough':
+      drawPixelSceneWinterAndBreakthrough(g, pw, ph, time, localTime, energy);
+      break;
+    case 'witness-and-writer-finale':
+      drawPixelSceneWitnessAndWriterFinale(g, pw, ph, time, localTime, energy);
       break;
   }
 }
@@ -2884,6 +2914,311 @@ function drawPixelSceneTypography(
       }
       break;
     }
+
+    case 'transformer-llm-birth': {
+      // Cue 138 (0–1.97s) "从 Transformer 架构的诞生" | Cue 139 (1.97–5.57s) "到以 ChatGPT 为代表的大语言模型橫空出世"
+      if (localTime < 1.97) {
+        drawPixelHudTag(ctx, '2017 · ATTENTION IS ALL YOU NEED', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.023 : h * 0.021, clamp01(localTime / 0.22), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, 'Transformer 诞生', w * 0.5, h * (isPortrait ? 0.22 : 0.22), isPortrait ? w * 0.098 : h * 0.092, localTime, {
+          startDelay: 0.05,
+          stagger: 0.032,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          maxWidth: w * 0.9,
+        });
+      } else {
+        const ct = localTime - 1.97;
+        drawPixelHudTag(ctx, 'LARGE LANGUAGE MODEL · 横空出世', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(ct / 0.22), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, 'ChatGPT 横空出世', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.102 : h * 0.096, ct, {
+          startDelay: 0.05,
+          stagger: 0.036,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [0, 1, 2, 3, 4, 5, 6],
+          plaqueBg: 'rgba(12, 30, 42, 0.92)',
+          plaqueBorder: PAL.goldLight,
+          maxWidth: w * 0.9,
+        });
+      }
+      break;
+    }
+
+    case 'multimodal-allrounder': {
+      // Cue 140 (0–4.67s) "再到如今的文本、图像、视频、音频多模态全能 AI"
+      drawPixelHudTag(ctx, 'TEXT · IMAGE · VIDEO · AUDIO', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(localTime / 0.22), {
+        border: PAL.goldLight,
+        textColor: PAL.goldLight,
+      });
+      drawPixelKineticTitle(ctx, '多模态全能 AI', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.112 : h * 0.104, localTime, {
+        startDelay: 0.06,
+        stagger: 0.045,
+        color: PAL.cream,
+        accentColor: PAL.goldLight,
+        highlightIndices: [3, 4, 6, 7],
+        plaqueBg: 'rgba(16, 22, 48, 0.92)',
+        plaqueBorder: PAL.tealLight,
+        maxWidth: w * 0.88,
+      });
+      break;
+    }
+
+    case 'humanlike-creativity': {
+      // Cue 141 (0–2.27s) "不再只会做单选题" | Cue 142 (2.27–5.10s) "语言理解" | Cue 143 (5.10–5.83s) "逻辑推理" | Cue 144 (5.83–8.73s) "艺术创作甚至是情感共鸣"
+      if (localTime < 2.27) {
+        drawPixelHudTag(ctx, 'BREAKING OUT OF THE BOX', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(localTime / 0.22), {
+          border: PAL.coralLight,
+          textColor: PAL.coralLight,
+        });
+        drawPixelKineticTitle(ctx, '不再只会做单选题', w * 0.5, h * (isPortrait ? 0.22 : 0.22), isPortrait ? w * 0.102 : h * 0.094, localTime, {
+          startDelay: 0.05,
+          stagger: 0.04,
+          color: PAL.cream,
+          accentColor: PAL.coralLight,
+          highlightIndices: [5, 6, 7],
+          maxWidth: w * 0.9,
+        });
+      } else if (localTime < 5.10) {
+        const lt = localTime - 2.27;
+        drawPixelHudTag(ctx, 'HUMAN-LIKE UNDERSTANDING', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(lt / 0.2), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, '语言理解', w * 0.5, h * (isPortrait ? 0.225 : 0.225), isPortrait ? w * 0.128 : h * 0.116, lt, {
+          startDelay: 0.04,
+          stagger: 0.05,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [0, 1, 2, 3],
+          maxWidth: w * 0.86,
+        });
+      } else if (localTime < 5.83) {
+        const rt = localTime - 5.10;
+        drawPixelHudTag(ctx, 'DEEP REASONING', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(rt / 0.15), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '逻辑推理', w * 0.5, h * (isPortrait ? 0.225 : 0.225), isPortrait ? w * 0.128 : h * 0.116, rt, {
+          startDelay: 0.02,
+          stagger: 0.04,
+          color: PAL.goldLight,
+          accentColor: PAL.cream,
+          highlightIndices: [2, 3],
+          maxWidth: w * 0.86,
+        });
+      } else {
+        const et = localTime - 5.83;
+        drawPixelHudTag(ctx, 'ARTISTIC CREATION & EMPATHY', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(et / 0.22), {
+          border: PAL.coralLight,
+          textColor: PAL.coralLight,
+        });
+        drawPixelKineticTitle(ctx, '艺术创作 · 情感共鸣', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.098 : h * 0.092, et, {
+          startDelay: 0.04,
+          stagger: 0.036,
+          color: PAL.cream,
+          accentColor: PAL.coralLight,
+          highlightIndices: [7, 8, 9, 10],
+          plaqueBg: 'rgba(26, 20, 50, 0.92)',
+          plaqueBorder: PAL.coralLight,
+          maxWidth: w * 0.92,
+        });
+      }
+      break;
+    }
+
+    case 'spark-to-world-tree': {
+      // Cue 145 (0–2.13s) "从达特茅斯会议的星星之火" | Cue 146 (2.13–5.13s) "到今天赋能千行百业的参天大树" | Cue 147 (5.13–6.80s) "AI 用了近八十年"
+      if (localTime < 2.13) {
+        drawPixelHudTag(ctx, '1956 DARTMOUTH · THE FIRST SPARK', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.023 : h * 0.021, clamp01(localTime / 0.22), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '达特茅斯 · 星星之火', w * 0.5, h * (isPortrait ? 0.22 : 0.22), isPortrait ? w * 0.098 : h * 0.092, localTime, {
+          startDelay: 0.05,
+          stagger: 0.038,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [7, 8, 9, 10],
+          maxWidth: w * 0.9,
+        });
+      } else if (localTime < 5.13) {
+        const trT = localTime - 2.13;
+        drawPixelHudTag(ctx, 'EMPOWERING EVERY INDUSTRY', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(trT / 0.22), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, '赋能千行百业 · 参天大树', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.09 : h * 0.084, trT, {
+          startDelay: 0.05,
+          stagger: 0.034,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [9, 10, 11, 12],
+          plaqueBg: 'rgba(12, 30, 44, 0.92)',
+          plaqueBorder: PAL.tealLight,
+          maxWidth: w * 0.92,
+        });
+      } else {
+        const yrT = localTime - 5.13;
+        drawPixelHudTag(ctx, '1950 — 2026 · EIGHT DECADES', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(yrT / 0.2), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, 'AI 用了近八十年', w * 0.5, h * (isPortrait ? 0.225 : 0.225), isPortrait ? w * 0.11 : h * 0.102, yrT, {
+          startDelay: 0.04,
+          stagger: 0.042,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [6, 7, 8],
+          plaqueBg: 'rgba(14, 26, 42, 0.92)',
+          plaqueBorder: PAL.goldLight,
+          maxWidth: w * 0.88,
+        });
+      }
+      break;
+    }
+
+    case 'civilization-revolution': {
+      // Cue 148 (0–1.47s) "它不仅是一项技术" | Cue 149 (1.47–4.83s) "更是一次深刻重塑人类文明的工业革命"
+      if (localTime < 1.47) {
+        drawPixelHudTag(ctx, 'MORE THAN TECHNOLOGY', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(localTime / 0.2), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, '不仅是一项技术', w * 0.5, h * (isPortrait ? 0.22 : 0.22), isPortrait ? w * 0.112 : h * 0.102, localTime, {
+          startDelay: 0.04,
+          stagger: 0.042,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [5, 6],
+          maxWidth: w * 0.88,
+        });
+      } else {
+        const revT = localTime - 1.47;
+        drawPixelHudTag(ctx, 'INDUSTRIAL REVOLUTION 4.0 · 文明跃迁', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.023 : h * 0.021, clamp01(revT / 0.22), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '重塑人类文明的工业革命', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.092 : h * 0.086, revT, {
+          startDelay: 0.05,
+          stagger: 0.034,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [7, 8, 9, 10],
+          plaqueBg: 'rgba(20, 20, 48, 0.92)',
+          plaqueBorder: PAL.goldLight,
+          maxWidth: w * 0.92,
+        });
+      }
+      break;
+    }
+
+    case 'winter-and-breakthrough': {
+      // Cue 150 (0–2.10s) "回顾这段历史" | Cue 151 (2.10–4.60s) "每一次寒冬都是技术的沉淀" | Cue 152 (4.60–7.43s) "每一次爆发都是底层逻辑的革新"
+      if (localTime < 2.10) {
+        drawPixelHudTag(ctx, 'LOOKING BACK AT 80 YEARS', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(localTime / 0.22), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, '回顾这段历史', w * 0.5, h * (isPortrait ? 0.22 : 0.22), isPortrait ? w * 0.116 : h * 0.106, localTime, {
+          startDelay: 0.05,
+          stagger: 0.045,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [4, 5],
+          maxWidth: w * 0.88,
+        });
+      } else if (localTime < 4.60) {
+        const wt = localTime - 2.10;
+        drawPixelHudTag(ctx, 'WINTERS BUILD DEEP ROOTS', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(wt / 0.22), {
+          border: PAL.iceLight,
+          textColor: PAL.iceLight,
+        });
+        drawPixelKineticTitle(ctx, '寒冬 · 技术的沉淀', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.106 : h * 0.098, wt, {
+          startDelay: 0.05,
+          stagger: 0.04,
+          color: PAL.cream,
+          accentColor: PAL.iceLight,
+          highlightIndices: [0, 1, 8, 9],
+          plaqueBg: 'rgba(12, 24, 48, 0.92)',
+          plaqueBorder: PAL.iceLight,
+          maxWidth: w * 0.9,
+        });
+      } else {
+        const st = localTime - 4.60;
+        drawPixelHudTag(ctx, 'PARADIGM SHIFT · 底层革新', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(st / 0.22), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '爆发 · 底层逻辑革新', w * 0.5, h * (isPortrait ? 0.22 : 0.225), isPortrait ? w * 0.102 : h * 0.094, st, {
+          startDelay: 0.05,
+          stagger: 0.038,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [0, 1, 9, 10],
+          plaqueBg: 'rgba(18, 22, 48, 0.92)',
+          plaqueBorder: PAL.goldLight,
+          maxWidth: w * 0.92,
+        });
+      }
+      break;
+    }
+
+    case 'witness-and-writer-finale': {
+      // Cue 153 (0–1.17s) "而今天" | Cue 154 (1.17–3.87s) "我们每个人既是这段历史的见证者" | Cue 155 (3.87–5.50s) "也是未来的书写者"
+      if (localTime < 1.17) {
+        drawPixelHudTag(ctx, 'FINALE · HERE & NOW', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(localTime / 0.2), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '而今天', w * 0.5, h * (isPortrait ? 0.225 : 0.225), isPortrait ? w * 0.136 : h * 0.124, localTime, {
+          startDelay: 0.04,
+          stagger: 0.05,
+          color: PAL.goldLight,
+          accentColor: PAL.cream,
+          highlightIndices: [1, 2],
+          maxWidth: w * 0.86,
+        });
+      } else if (localTime < 3.87) {
+        const wt = localTime - 1.17;
+        drawPixelHudTag(ctx, 'WITNESSES OF HISTORY', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(wt / 0.22), {
+          border: PAL.tealLight,
+          textColor: PAL.tealLight,
+        });
+        drawPixelKineticTitle(ctx, '历史的见证者', w * 0.5, h * (isPortrait ? 0.225 : 0.225), isPortrait ? w * 0.118 : h * 0.108, wt, {
+          startDelay: 0.05,
+          stagger: 0.045,
+          color: PAL.cream,
+          accentColor: PAL.tealLight,
+          highlightIndices: [3, 4, 5],
+          plaqueBg: 'rgba(12, 20, 44, 0.9)',
+          plaqueBorder: PAL.tealLight,
+          maxWidth: w * 0.88,
+        });
+      } else {
+        const ft = localTime - 3.87;
+        drawPixelHudTag(ctx, 'AI CHRONICLE · TO BE CONTINUED', w * 0.5, h * (isPortrait ? 0.105 : 0.088), isPortrait ? w * 0.024 : h * 0.022, clamp01(ft / 0.2), {
+          border: PAL.goldLight,
+          textColor: PAL.goldLight,
+        });
+        drawPixelKineticTitle(ctx, '也是未来的书写者', w * 0.5, h * (isPortrait ? 0.225 : 0.228), isPortrait ? w * 0.11 : h * 0.102, ft, {
+          startDelay: 0.04,
+          stagger: 0.04,
+          color: PAL.cream,
+          accentColor: PAL.goldLight,
+          highlightIndices: [2, 3, 5, 6, 7],
+          plaqueBg: 'rgba(14, 18, 42, 0.92)',
+          plaqueBorder: PAL.goldLight,
+          maxWidth: w * 0.92,
+        });
+      }
+      break;
+    }
   }
 
   ctx.restore();
@@ -3109,6 +3444,52 @@ function getSceneCamera(sceneId: SceneId, localTime: number, progress: number, i
         dy: lerp(7, -6, dawnRise),
       };
     }
+    case 'transformer-llm-birth': {
+      const llmPan = smoothstep(1.8, 3.6, localTime);
+      return {
+        scale: lerp(1.0, 1.07, progress),
+        dx: lerp(7 * amt, -7 * amt, llmPan),
+        dy: 0,
+      };
+    }
+    case 'multimodal-allrounder':
+      return {
+        scale: lerp(1.04, 1.0, easeOutCubic(progress)) + smoothstep(2.4, 4.4, localTime) * 0.05,
+        dx: Math.sin(localTime * 0.85) * 4 * amt,
+        dy: 0,
+      };
+    case 'humanlike-creativity': {
+      const bloomZoom = smoothstep(2.1, 4.2, localTime);
+      return {
+        scale: lerp(1.02, 1.07, progress),
+        dx: 0,
+        dy: lerp(4, -5, bloomZoom),
+      };
+    }
+    case 'spark-to-world-tree':
+      return {
+        scale: lerp(1.06, 1.0, easeOutExpo(progress)),
+        dx: 0,
+        dy: lerp(8, -6, smoothstep(1.4, 4.8, localTime)),
+      };
+    case 'civilization-revolution':
+      return {
+        scale: lerp(1.0, 1.07, progress),
+        dx: lerp(8 * amt, -8 * amt, progress),
+        dy: lerp(4, -5, progress),
+      };
+    case 'winter-and-breakthrough':
+      return {
+        scale: lerp(1.01, 1.06, progress),
+        dx: lerp(6 * amt, -6 * amt, progress),
+        dy: lerp(4, -5, smoothstep(4.2, 6.8, localTime)),
+      };
+    case 'witness-and-writer-finale':
+      return {
+        scale: lerp(1.05, 1.0, easeOutCubic(progress)),
+        dx: 0,
+        dy: lerp(6, -4, progress),
+      };
   }
 }
 

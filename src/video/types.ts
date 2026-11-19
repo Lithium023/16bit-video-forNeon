@@ -66,7 +66,14 @@ export type SceneId =
   | 'alphago-2016'
   | 'go-last-bastion'
   | 'modern-ai-prelude'
-  | 'stage-five-agi-dawn';
+  | 'stage-five-agi-dawn'
+  | 'transformer-llm-birth'
+  | 'multimodal-allrounder'
+  | 'humanlike-creativity'
+  | 'spark-to-world-tree'
+  | 'civilization-revolution'
+  | 'winter-and-breakthrough'
+  | 'witness-and-writer-finale';
 
 export interface SceneCut {
   id: SceneId;

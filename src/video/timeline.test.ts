@@ -12,8 +12,8 @@ import {
   getSyntheticVoiceEnergy,
 } from './timeline';
 
-test('SCENE_CUTS cover [0, 271.0] contiguously without gaps or overlaps', () => {
-  assert.equal(SCENE_CUTS.length, 48);
+test('SCENE_CUTS cover [0, 314.5] contiguously without gaps or overlaps', () => {
+  assert.equal(SCENE_CUTS.length, 55);
   assert.equal(SCENE_CUTS[0].start, 0);
   assert.equal(SCENE_CUTS[SCENE_CUTS.length - 1].end, CLIP_DURATION);
 
@@ -76,8 +76,15 @@ test('getSceneAtTime resolves exact key story beats across 0–198.6s and clamps
   assert.equal(getSceneAtTime(252.0).scene.id, 'go-last-bastion');
   assert.equal(getSceneAtTime(257.5).scene.id, 'modern-ai-prelude');
   assert.equal(getSceneAtTime(265.0).scene.id, 'stage-five-agi-dawn');
-  assert.equal(getSceneAtTime(271.0).scene.id, 'stage-five-agi-dawn');
-  assert.equal(getSceneAtTime(271.0).progress, 1);
+  assert.equal(getSceneAtTime(274.0).scene.id, 'transformer-llm-birth');
+  assert.equal(getSceneAtTime(279.0).scene.id, 'multimodal-allrounder');
+  assert.equal(getSceneAtTime(286.0).scene.id, 'humanlike-creativity');
+  assert.equal(getSceneAtTime(293.0).scene.id, 'spark-to-world-tree');
+  assert.equal(getSceneAtTime(299.0).scene.id, 'civilization-revolution');
+  assert.equal(getSceneAtTime(305.0).scene.id, 'winter-and-breakthrough');
+  assert.equal(getSceneAtTime(312.0).scene.id, 'witness-and-writer-finale');
+  assert.equal(getSceneAtTime(314.5).scene.id, 'witness-and-writer-finale');
+  assert.equal(getSceneAtTime(314.5).progress, 1);
 });
 
 test('getActiveTransition detects rhythmic transitions around cut points', () => {
@@ -193,6 +200,34 @@ test('getActiveTransition detects rhythmic transitions around cut points', () =>
   assert.equal(stage5Tr?.type, 'horizon-burst');
   assert.equal(stage5Tr?.toScene.id, 'stage-five-agi-dawn');
 
+  const transformerTr = getActiveTransition(271.02);
+  assert.equal(transformerTr?.type, 'iris-flash');
+  assert.equal(transformerTr?.toScene.id, 'transformer-llm-birth');
+
+  const multiTr = getActiveTransition(276.58);
+  assert.equal(multiTr?.type, 'razor-wipe');
+  assert.equal(multiTr?.toScene.id, 'multimodal-allrounder');
+
+  const creativeTr = getActiveTransition(281.25);
+  assert.equal(creativeTr?.type, 'whip-blinds');
+  assert.equal(creativeTr?.toScene.id, 'humanlike-creativity');
+
+  const treeTr = getActiveTransition(289.98);
+  assert.equal(treeTr?.type, 'ember-curtain');
+  assert.equal(treeTr?.toScene.id, 'spark-to-world-tree');
+
+  const revTr = getActiveTransition(296.78);
+  assert.equal(revTr?.type, 'camera-pullback');
+  assert.equal(revTr?.toScene.id, 'civilization-revolution');
+
+  const winterWaveTr = getActiveTransition(301.62);
+  assert.equal(winterWaveTr?.type, 'razor-wipe');
+  assert.equal(winterWaveTr?.toScene.id, 'winter-and-breakthrough');
+
+  const finaleTr = getActiveTransition(309.08);
+  assert.equal(finaleTr?.type, 'horizon-burst');
+  assert.equal(finaleTr?.toScene.id, 'witness-and-writer-finale');
+
   // Mid-scene steady state should have no transition
   assert.equal(getActiveTransition(5.5), null);
   assert.equal(getActiveTransition(43.0), null);
@@ -202,6 +237,8 @@ test('getActiveTransition detects rhythmic transitions around cut points', () =>
   assert.equal(getActiveTransition(220.0), null);
   assert.equal(getActiveTransition(247.0), null);
   assert.equal(getActiveTransition(265.0), null);
+  assert.equal(getActiveTransition(285.0), null);
+  assert.equal(getActiveTransition(312.5), null);
 });
 
 test('easing, stagger, and voice energy helpers stay within valid bounds', () => {

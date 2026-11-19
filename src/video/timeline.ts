@@ -713,7 +713,7 @@ export const SCENE_CUTS: SceneCut[] = [
     title: '第五阶段 · 大模型与 AGI 曙光',
     keyLine: '第五阶段：大模型与通用人工智能曙光，发展速度用“日新月异”都嫌慢',
     start: 260.066,
-    end: CLIP_DURATION,
+    end: 270.966,
     accentColor: '#FFE08A',
     secondaryColor: '#7ED4C0',
     bgColor: '#0C122B',
@@ -721,6 +721,111 @@ export const SCENE_CUTS: SceneCut[] = [
     transitionLabel: '曙光破晓溶镜',
     transitionDuration: 0.72,
     visualNote: '像素旭日与多模态大模型圣殿升起，时间线加速跃迁至当代，万物互联展现日新月异的 AGI 曙光',
+  },
+  {
+    id: 'transformer-llm-birth',
+    index: 49,
+    title: 'Transformer · ChatGPT',
+    keyLine: '从 Transformer 架构的诞生，到以 ChatGPT 为代表的大语言模型横空出世',
+    start: 270.966,
+    end: 276.533,
+    accentColor: '#7ED4C0',
+    secondaryColor: '#FFE08A',
+    bgColor: '#0C182D',
+    transitionIn: 'iris-flash',
+    transitionLabel: '架构光圈聚焦',
+    transitionDuration: 0.56,
+    visualNote: '左屏 Transformer 自注意力连线矩阵流转，右屏 ChatGPT 大语言模型终端横空出世流式生成',
+  },
+  {
+    id: 'multimodal-allrounder',
+    index: 50,
+    title: '多模态全能 AI',
+    keyLine: '再到如今的文本、图像、视频、音频多模态全能 AI',
+    start: 276.533,
+    end: 281.200,
+    accentColor: '#F2B44B',
+    secondaryColor: '#7ED4C0',
+    bgColor: '#0F1630',
+    transitionIn: 'razor-wipe',
+    transitionLabel: '多模态横移摇镜',
+    transitionDuration: 0.54,
+    visualNote: '中央 OMNI AI 菱形棱镜同步驱动 TEXT / IMAGE / VIDEO / AUDIO 四大像素模态卡片依次点亮',
+  },
+  {
+    id: 'humanlike-creativity',
+    index: 51,
+    title: '破框 · 推理与情感共鸣',
+    keyLine: '不再只会做单选题，展现出语言理解、逻辑推理、艺术创作与情感共鸣',
+    start: 281.200,
+    end: 289.933,
+    accentColor: '#F58E7E',
+    secondaryColor: '#FFE08A',
+    bgColor: '#161430',
+    transitionIn: 'whip-blinds',
+    transitionLabel: '破框穿镜推镜',
+    transitionDuration: 0.54,
+    visualNote: '旧式单选题卡片被红叉划破退场，16-Bit 像素心智核心绽放语言、逻辑、艺术与共鸣四维星环',
+  },
+  {
+    id: 'spark-to-world-tree',
+    index: 52,
+    title: '星星之火 · 参天大树',
+    keyLine: '从达特茅斯会议的星星之火，到赋能千行百业的参天大树，AI 用了近八十年',
+    start: 289.933,
+    end: 296.733,
+    accentColor: '#7ED4C0',
+    secondaryColor: '#FFE08A',
+    bgColor: '#0E2030',
+    transitionIn: 'ember-curtain',
+    transitionLabel: '星火参天升镜',
+    transitionDuration: 0.62,
+    visualNote: '1956 达特茅斯金色火种在土壤中破土生长为参天像素巨树，枝头点亮医疗、代码、科研与艺术硕果',
+  },
+  {
+    id: 'civilization-revolution',
+    index: 53,
+    title: '重塑人类文明的工业革命',
+    keyLine: '它不仅是一项技术，更是一次深刻重塑人类文明的工业革命',
+    start: 296.733,
+    end: 301.566,
+    accentColor: '#FFE08A',
+    secondaryColor: '#7ED4C0',
+    bgColor: '#141530',
+    transitionIn: 'camera-pullback',
+    transitionLabel: '文明跃迁溶镜',
+    transitionDuration: 0.58,
+    visualNote: '蒸汽、电力、信息与 AI 四代工业革命像素丰碑阶梯式拔地而起，4.0 AI 时代冠冕加身',
+  },
+  {
+    id: 'winter-and-breakthrough',
+    index: 54,
+    title: '寒冬沉淀 · 底层革新',
+    keyLine: '每一次寒冬都是技术的沉淀，每一次爆发都是底层逻辑的革新',
+    start: 301.566,
+    end: 309.000,
+    accentColor: '#A8DDF2',
+    secondaryColor: '#FFE08A',
+    bgColor: '#0B162E',
+    transitionIn: 'razor-wipe',
+    transitionLabel: '历史波澜摇镜',
+    transitionDuration: 0.56,
+    visualNote: '80 年历史波峰波谷曲线全景：两次寒冬在谷底沉淀冰晶根基，随即化作金色光柱直冲 2026 巅峰',
+  },
+  {
+    id: 'witness-and-writer-finale',
+    index: 55,
+    title: '终章 · 见证者与书写者',
+    keyLine: '而今天，我们每个人既是这段历史的见证者，也是未来的书写者',
+    start: 309.000,
+    end: CLIP_DURATION,
+    accentColor: '#FFE08A',
+    secondaryColor: '#7ED4C0',
+    bgColor: '#080D1F',
+    transitionIn: 'horizon-burst',
+    transitionLabel: '终章星穹破晓',
+    transitionDuration: 0.68,
+    visualNote: '黎明星穹下三位像素同行者仰望朝阳，金色星笔划出 1950–FUTURE 光弧，温暖定格全片终章',
   },
 ];
 
@@ -845,7 +950,7 @@ export function getSyntheticVoiceEnergy(time: number): number {
     0.18 * Math.sin(t * 29.1 + 1.2) +
     0.11 * Math.cos(t * 7.4);
 
-  // Boost energy on dramatic climax hits across the 271.0s timeline
+  // Boost energy on dramatic climax hits across the full 314.5s timeline
   let emphasis = 1.0;
   if (t >= 6.6 && t <= 10.2) emphasis = 1.2;
   if (t >= 14.63 && t <= 15.45) emphasis = 1.35;
@@ -878,6 +983,11 @@ export function getSyntheticVoiceEnergy(time: number): number {
   if (t >= 251.5 && t <= 254.0) emphasis = 1.26;
   if (t >= 256.8 && t <= 260.0) emphasis = 1.34;
   if (t >= 261.0 && t <= 270.8) emphasis = 1.38;
+  if (t >= 273.0 && t <= 281.0) emphasis = 1.32;
+  if (t >= 286.3 && t <= 289.9) emphasis = 1.28;
+  if (t >= 292.0 && t <= 301.5) emphasis = 1.36;
+  if (t >= 306.1 && t <= 309.0) emphasis = 1.34;
+  if (t >= 310.2 && t <= 314.2) emphasis = 1.4;
   if (t >= CLIP_DURATION - 0.3) emphasis = Math.max(0.15, (CLIP_DURATION - t) / 0.3);
 
   return clamp01(syllableWave * emphasis);

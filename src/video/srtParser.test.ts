@@ -18,14 +18,14 @@ test('parseSrtTimestamp converts SRT timestamps to exact seconds', () => {
   assert.equal(parseSrtTimestamp('00:01:14,700'), 74.7);
 });
 
-test('parseSrt parses real uploaded SRT file and clips cleanly to Stage 5 AGI Dawn (271.0s / 137 cues)', () => {
+test('parseSrt parses real uploaded SRT file completely through Finale (314.5s / 155 cues)', () => {
   const srtPath = path.resolve(process.cwd(), 'public/assets/aistudio/ai____416e1634.srt');
   const rawFile = fs.readFileSync(srtPath, 'utf8');
   const fullCues = parseSrt(rawFile);
-  assert.ok(fullCues.length > 137, 'Expected full SRT file to contain over 137 cues');
+  assert.equal(fullCues.length, 155, 'Expected full SRT file to contain exactly 155 cues');
 
   const clipped = parseSrt(rawFile, CLIP_DURATION);
-  assert.equal(clipped.length, 137);
+  assert.equal(clipped.length, 155);
   assert.equal(clipped[0].text, '欢迎来到今天的AI专题分享');
   assert.equal(clipped[7].text, '但其实');
   assert.equal(clipped[13].text, '最终迎来了如今改变世界的璀璨盛世');
@@ -48,12 +48,17 @@ test('parseSrt parses real uploaded SRT file and clips cleanly to Stage 5 AGI Da
   assert.equal(clipped[127].text, '以 4:1 击败了围棋世界冠军李世石');
   assert.equal(clipped[132].text, '第五阶段');
   assert.equal(clipped[136].text, 'AI 的发展速度已经用“日新月异”都嫌慢来形容了');
-  assert.equal(clipped[136].end, 270.966);
+  assert.equal(clipped[137].text, '从 Transformer 架构的诞生');
+  assert.equal(clipped[139].text, '再到如今的文本、图像、视频、音频多模态全能 AI');
+  assert.equal(clipped[145].text, '到今天赋能千行百业的参天大树');
+  assert.equal(clipped[151].text, '每一次爆发都是底层逻辑的革新');
+  assert.equal(clipped[154].text, '也是未来的书写者');
+  assert.equal(clipped[154].end, 314.233);
 });
 
-test('DEFAULT_30S_SRT matches the 137 cues through 271.0s and bridges micro-gaps', () => {
+test('DEFAULT_30S_SRT matches all 155 cues through 314.5s and bridges micro-gaps', () => {
   const cues = parseSrt(DEFAULT_30S_SRT, CLIP_DURATION);
-  assert.equal(cues.length, 137);
+  assert.equal(cues.length, 155);
   assert.equal(getActiveCue(cues, 0.5)?.text, '欢迎来到今天的AI专题分享');
   assert.equal(getActiveCue(cues, 14.9)?.text, '但其实');
   assert.equal(getActiveCue(cues, 15.44)?.text, '但其实');
@@ -81,6 +86,13 @@ test('DEFAULT_30S_SRT matches the 137 cues through 271.0s and bridges micro-gaps
   assert.equal(getActiveCue(cues, 258.5)?.text, '也正式拉开了现代 AI 狂飙突进的序幕');
   assert.equal(getActiveCue(cues, 262.0)?.text, '大模型与通用人工智能曙光');
   assert.equal(getActiveCue(cues, 269.5)?.text, 'AI 的发展速度已经用“日新月异”都嫌慢来形容了');
+  assert.equal(getActiveCue(cues, 274.5)?.text, '到以 ChatGPT 为代表的大语言模型橫空出世');
+  assert.equal(getActiveCue(cues, 279.5)?.text, '再到如今的文本、图像、视频、音频多模态全能 AI');
+  assert.equal(getActiveCue(cues, 288.5)?.text, '艺术创作甚至是情感共鸣的能力');
+  assert.equal(getActiveCue(cues, 294.0)?.text, '到今天赋能千行百业的参天大树');
+  assert.equal(getActiveCue(cues, 300.0)?.text, '更是一次深刻重塑人类文明的工业革命');
+  assert.equal(getActiveCue(cues, 307.5)?.text, '每一次爆发都是底层逻辑的革新');
+  assert.equal(getActiveCue(cues, 313.5)?.text, '也是未来的书写者');
 });
 
 test('formatTimecode formats broadcast MM:SS.CC cleanly', () => {
@@ -93,4 +105,5 @@ test('formatTimecode formats broadcast MM:SS.CC cleanly', () => {
   assert.equal(formatTimecode(198.6), '03:18.60');
   assert.equal(formatTimecode(234.2), '03:54.20');
   assert.equal(formatTimecode(271.0), '04:31.00');
+  assert.equal(formatTimecode(314.5), '05:14.50');
 });
