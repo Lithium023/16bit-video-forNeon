@@ -413,6 +413,33 @@ export function EditorialPanel({
               </button>
             </div>
 
+            {/* Reusable 16-Bit Video Skill Package Download */}
+            <div className="border-t border-zinc-800/80 pt-4">
+              <div className="flex items-baseline justify-between gap-2 mb-2">
+                <h3 className="text-xs font-semibold text-zinc-300">同款视频 Skill 压缩包</h3>
+                <span className="font-mono-tabular text-[10px] text-zinc-500">ZIP · 4 份规范文档</span>
+              </div>
+              <div className="p-3 rounded-lg border border-amber-500/35 bg-amber-500/8 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-mono-tabular text-xs font-semibold text-amber-300 truncate">
+                    retro-16bit-pixel-video-skill.zip
+                  </div>
+                  <div className="text-[11px] text-zinc-400 mt-0.5">
+                    含 16-Bit 审美、双层字体、转场音效与 MP4 导出规范
+                  </div>
+                </div>
+                <a
+                  href="/assets/retro-16bit-pixel-video-skill.zip"
+                  download="retro-16bit-pixel-video-skill.zip"
+                  aria-label="下载 retro-16bit-pixel-video Skill 压缩包"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold whitespace-nowrap shrink-0 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" aria-hidden="true" />
+                  <span>下载 ZIP</span>
+                </a>
+              </div>
+            </div>
+
             {/* Quick Highlight Inspection Jumps */}
             <div className="border-t border-zinc-800/80 pt-4">
               <h3 className="text-xs font-semibold text-zinc-300 mb-2.5">高光定格速览</h3>
