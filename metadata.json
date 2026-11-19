@@ -1,0 +1,6 @@
+{
+  "name": "AI 发展史 · 30秒动效成片工作室",
+  "description": "基于口播音频与SRT字幕打造的30秒高燃动态排版视频，内置节奏转场、多轨非线性时间轴与视频导出。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
