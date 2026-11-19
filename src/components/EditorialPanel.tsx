@@ -104,12 +104,19 @@ export function EditorialPanel({
       {exportStatus.state === 'done' && exportStatus.downloadUrl && (
         <div className="mx-4 mt-3 p-3 rounded-md border border-amber-500/40 bg-amber-500/10 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-amber-300">16-Bit 动效成片已生成</p>
-            <p className="text-[11px] text-zinc-400 truncate">含口播 + 16-Bit 章节配乐与音效 (WebM)</p>
+            <p className="text-xs font-semibold text-amber-300">
+              16-Bit 成片已生成 ({exportStatus.resolutionLabel ?? '1920x1080'})
+            </p>
+            <p className="text-[11px] text-zinc-400 truncate">
+              含口播 + 16-Bit 章节配乐与音效 ({exportStatus.filename?.endsWith('.webm') ? 'WebM' : 'MP4'})
+            </p>
           </div>
           <a
             href={exportStatus.downloadUrl}
-            download={`AI发展史_16bit完整成片_${settings.aspectRatio.replace(':', 'x')}.webm`}
+            download={
+              exportStatus.filename ??
+              `AI发展史_16bit完整成片_${settings.aspectRatio === '9:16' ? '1080x1920' : '1920x1080'}.mp4`
+            }
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs font-bold whitespace-nowrap shrink-0"
           >
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
@@ -239,6 +246,50 @@ export function EditorialPanel({
                       key={item.value}
                       type="button"
                       onClick={() => onUpdateSettings({ aspectRatio: item.value })}
+                      aria-pressed={selected}
+                      className={`p-3 rounded-lg border text-left transition-colors cursor-pointer ${
+                        selected
+                          ? 'bg-zinc-900 border-amber-500/70 text-zinc-50'
+                          : 'bg-zinc-950/60 border-zinc-800 text-zinc-400 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="font-mono-tabular text-xs font-bold">{item.title}</div>
+                      <div className="text-[11px] text-zinc-400 mt-0.5">{item.desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Export Resolution */}
+            <div className="border-t border-zinc-800/80 pt-4">
+              <div className="flex items-baseline justify-between gap-2 mb-2">
+                <h3 className="text-xs font-semibold text-zinc-300">导出分辨率 (MP4)</h3>
+                <span className="font-mono-tabular text-[10px] text-zinc-500">
+                  {settings.exportResolution === '1080p' ? '14 Mbps · 5× 像素无损' : '6.5 Mbps · 轻量快速'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    {
+                      value: '1080p',
+                      title: '1080p 全高清',
+                      desc: settings.aspectRatio === '9:16' ? '1080×1920 竖屏' : '1920×1080 横屏',
+                    },
+                    {
+                      value: '720p',
+                      title: '720p 标准',
+                      desc: settings.aspectRatio === '9:16' ? '720×1280 竖屏' : '1280×720 横屏',
+                    },
+                  ] as const
+                ).map((item) => {
+                  const selected = settings.exportResolution === item.value;
+                  return (
+                    <button
+                      key={item.value}
+                      type="button"
+                      onClick={() => onUpdateSettings({ exportResolution: item.value })}
                       aria-pressed={selected}
                       className={`p-3 rounded-lg border text-left transition-colors cursor-pointer ${
                         selected

@@ -17,6 +17,7 @@ export type TransitionType =
   | 'horizon-burst';
 
 export type AspectRatio = '16:9' | '9:16';
+export type ExportResolution = '1080p' | '720p';
 
 export type SceneId =
   | 'intro-signal'
@@ -106,6 +107,7 @@ export interface PureVisualSceneContext {
 
 export interface RenderSettings {
   aspectRatio: AspectRatio;
+  exportResolution: ExportResolution;
   showSubtitles: boolean;
   motionIntensity: number; // 0.6 to 1.35
   bgmVolume: number; // 0 to 1
@@ -125,4 +127,6 @@ export interface ExportStatus {
   progress: number; // 0..1
   message?: string;
   downloadUrl?: string;
+  filename?: string;
+  resolutionLabel?: string;
 }

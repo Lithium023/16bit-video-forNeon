@@ -15,7 +15,7 @@ import {
 } from './video/srtParser';
 import { clamp } from './video/timeline';
 import type { ExportStatus, RenderSettings, SrtCue } from './video/types';
-import { startVideoExport, type ExportController } from './video/videoExporter';
+import { getExportConfig, startVideoExport, type ExportController } from './video/videoExporter';
 
 function readInitialQueryParams(): {
   initialTime: number;
@@ -44,6 +44,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<PanelTab>('storyboard');
   const [settings, setSettings] = useState<RenderSettings>({
     aspectRatio: '16:9',
+    exportResolution: '1080p',
     showSubtitles: true,
     motionIntensity: 1.0,
     bgmVolume: 0.36,
@@ -463,13 +464,31 @@ export default function App() {
       URL.revokeObjectURL(exportStatus.downloadUrl);
     }
 
-    setExportStatus({ state: 'recording', progress: 0 });
+    const exportCfg = getExportConfig(settings.aspectRatio, settings.exportResolution);
+    setExportStatus({
+      state: 'recording',
+      progress: 0,
+      message: '准备 MP4',
+      resolutionLabel: exportCfg.resolutionTag,
+    });
     exportCtrlRef.current = startVideoExport(
       cues,
       settings,
-      (progress) => setExportStatus({ state: 'recording', progress }),
+      (progress, stage) =>
+        setExportStatus({
+          state: 'recording',
+          progress,
+          message: stage,
+          resolutionLabel: exportCfg.resolutionTag,
+        }),
       (url, filename) => {
-        setExportStatus({ state: 'done', progress: 1, downloadUrl: url });
+        setExportStatus({
+          state: 'done',
+          progress: 1,
+          downloadUrl: url,
+          filename,
+          resolutionLabel: exportCfg.resolutionTag,
+        });
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
@@ -512,6 +531,7 @@ export default function App() {
       <TopBar
         currentTime={currentTime}
         onJumpChapter={handleSeek}
+        exportResolution={settings.exportResolution}
         exportStatus={exportStatus}
         onStartExport={handleStartExport}
         onCancelExport={handleCancelExport}

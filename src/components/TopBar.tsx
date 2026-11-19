@@ -1,11 +1,12 @@
 import { Download, Loader2, X } from 'lucide-react';
-import type { ExportStatus } from '../video/types';
+import type { ExportResolution, ExportStatus } from '../video/types';
 
 export type PanelTab = 'storyboard' | 'subtitles' | 'controls';
 
 interface TopBarProps {
   currentTime: number;
   onJumpChapter: (time: number) => void;
+  exportResolution: ExportResolution;
   exportStatus: ExportStatus;
   onStartExport: () => void;
   onCancelExport: () => void;
@@ -23,11 +24,13 @@ const CHAPTER_NAV: Array<{ id: string; label: string; start: number; end: number
 export function TopBar({
   currentTime,
   onJumpChapter,
+  exportResolution,
   exportStatus,
   onStartExport,
   onCancelExport,
 }: TopBarProps) {
   const isExporting = exportStatus.state === 'recording' || exportStatus.state === 'encoding';
+  const resTag = exportResolution === '1080p' ? '1080p' : '720p';
 
   return (
     <header className="h-14 border-b border-zinc-800/80 bg-[#07080B]/95 backdrop-blur-sm px-4 lg:px-6 flex items-center justify-between gap-8 shrink-0">
@@ -36,7 +39,7 @@ export function TopBar({
         AI 发展史 · 16-Bit 成片
       </span>
 
-      {/* Zone 2: Clean 4-Chapter Direct Navigation */}
+      {/* Zone 2: Clean Chapter Direct Navigation */}
       <nav aria-label="章节快捷跳转" className="hidden md:flex items-center gap-7">
         {CHAPTER_NAV.map((chapter) => {
           const isActive = currentTime >= chapter.start && currentTime < chapter.end;
@@ -68,12 +71,12 @@ export function TopBar({
           <button
             type="button"
             onClick={onCancelExport}
-            aria-label="取消导出视频"
+            aria-label="取消导出 MP4 视频"
             className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-950 bg-amber-400 hover:bg-amber-300 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer"
           >
             <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
             <span className="font-mono-tabular">
-              导出中 {Math.round(exportStatus.progress * 100)}%
+              {exportStatus.message || `导出 ${resTag} MP4`} · {Math.round(exportStatus.progress * 100)}%
             </span>
             <X className="w-3.5 h-3.5 ml-0.5" aria-hidden="true" />
           </button>
@@ -81,11 +84,11 @@ export function TopBar({
           <button
             type="button"
             onClick={onStartExport}
-            aria-label="导出 16-Bit 成片视频"
+            aria-label={`导出 ${resTag} MP4 成片视频`}
             className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded-md transition-colors whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07080B]"
           >
             <Download className="w-3.5 h-3.5" aria-hidden="true" />
-            <span>导出成片视频</span>
+            <span>导出 {resTag} MP4</span>
           </button>
         )}
       </div>

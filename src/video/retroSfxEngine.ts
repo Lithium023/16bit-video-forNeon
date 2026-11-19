@@ -142,10 +142,10 @@ export function collectTriggeredSfxCues(prevTime: number, nextTime: number): Sfx
   return triggered;
 }
 
-// Reusable cached short white-noise buffer per AudioContext
-const noiseBufferCache = new WeakMap<AudioContext, AudioBuffer>();
+// Reusable cached short white-noise buffer per AudioContext / OfflineAudioContext
+const noiseBufferCache = new WeakMap<BaseAudioContext, AudioBuffer>();
 
-function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
+function getNoiseBuffer(ctx: BaseAudioContext): AudioBuffer {
   const existing = noiseBufferCache.get(ctx);
   if (existing) return existing;
   const length = Math.floor(ctx.sampleRate * 0.8);
@@ -165,16 +165,18 @@ function getNoiseBuffer(ctx: AudioContext): AudioBuffer {
 
 /**
  * Synthesize an authentic, warm, non-fatiguing 16-bit retro SFX directly into `destination`.
- * Works identically during live browser playback AND offline/realtime WebM video export!
+ * Works identically during live browser playback AND offline MP4 rendering (via scheduledTime)!
  */
 export function playSfxCue(
-  ctx: AudioContext,
+  ctx: BaseAudioContext,
   destination: AudioNode,
   cue: SfxCue,
-  masterSfxVolume: number
+  masterSfxVolume: number,
+  scheduledTime?: number
 ): void {
-  if (masterSfxVolume <= 0.005 || ctx.state !== 'running') return;
-  const now = ctx.currentTime;
+  if (masterSfxVolume <= 0.005) return;
+  if (scheduledTime === undefined && ctx.state !== 'running') return;
+  const now = scheduledTime ?? ctx.currentTime;
   const vol = Math.min(1, masterSfxVolume * (cue.gain ?? 0.5)) * 0.24;
   if (vol <= 0.001) return;
 
