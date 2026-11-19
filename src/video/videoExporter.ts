@@ -1,4 +1,5 @@
-import { AUDIO_SRC, CLIP_DURATION } from './srtParser';
+import { collectTriggeredSfxCues, playSfxCue } from './retroSfxEngine';
+import { AUDIO_SRC, BGM_SRC, CLIP_DURATION } from './srtParser';
 import { renderVideoFrame } from './sceneRenderers';
 import type { RenderSettings, SrtCue } from './types';
 
@@ -7,8 +8,8 @@ export interface ExportController {
 }
 
 /**
- * Render and record the full 30-second motion-graphics video synced with the MP3 voiceover
- * into a downloadable WebM file using Canvas captureStream + Web Audio MediaStreamDestination.
+ * Render and record the full 5m14.5s 16-bit motion-graphics video synced with the MP3 voiceover,
+ * 5-act 16-bit chiptune soundtrack, and synchronized retro SFX into a downloadable WebM file.
  */
 export function startVideoExport(
   cues: SrtCue[],
@@ -20,6 +21,7 @@ export function startVideoExport(
   let cancelled = false;
   let rafId = 0;
   let audioEl: HTMLAudioElement | null = null;
+  let bgmEl: HTMLAudioElement | null = null;
   let audioCtx: AudioContext | null = null;
   let recorder: MediaRecorder | null = null;
 
@@ -29,6 +31,11 @@ export function startVideoExport(
       audioEl.pause();
       audioEl.src = '';
       audioEl = null;
+    }
+    if (bgmEl) {
+      bgmEl.pause();
+      bgmEl.src = '';
+      bgmEl = null;
     }
     if (audioCtx && audioCtx.state !== 'closed') {
       audioCtx.close().catch(() => {});
@@ -54,22 +61,39 @@ export function startVideoExport(
       audioEl.crossOrigin = 'anonymous';
       audioEl.preload = 'auto';
 
-      await new Promise<void>((resolve, reject) => {
-        if (!audioEl) return reject(new Error('音频初始化失败'));
-        const onReady = () => {
-          audioEl?.removeEventListener('canplaythrough', onReady);
-          audioEl?.removeEventListener('error', onErr);
-          resolve();
-        };
-        const onErr = () => {
-          audioEl?.removeEventListener('canplaythrough', onReady);
-          audioEl?.removeEventListener('error', onErr);
-          reject(new Error('口播音频加载失败'));
-        };
-        audioEl.addEventListener('canplaythrough', onReady);
-        audioEl.addEventListener('error', onErr);
-        audioEl.load();
-      });
+      const loadAudio = (el: HTMLAudioElement, errMsg: string) =>
+        new Promise<void>((resolve, reject) => {
+          const onReady = () => {
+            el.removeEventListener('canplaythrough', onReady);
+            el.removeEventListener('error', onErr);
+            resolve();
+          };
+          const onErr = () => {
+            el.removeEventListener('canplaythrough', onReady);
+            el.removeEventListener('error', onErr);
+            reject(new Error(errMsg));
+          };
+          el.addEventListener('canplaythrough', onReady);
+          el.addEventListener('error', onErr);
+          el.load();
+        });
+
+      await loadAudio(audioEl, '口播音频加载失败');
+
+      // Optionally load mastered 5-act 16-bit BGM track if bgmVolume > 0
+      let bgmReady = false;
+      if (settings.bgmVolume > 0.01) {
+        bgmEl = new Audio(BGM_SRC);
+        bgmEl.crossOrigin = 'anonymous';
+        bgmEl.preload = 'auto';
+        try {
+          await loadAudio(bgmEl, '配乐加载失败');
+          bgmReady = true;
+        } catch {
+          bgmEl = null;
+          bgmReady = false;
+        }
+      }
 
       if (cancelled) {
         cleanup();
@@ -77,16 +101,28 @@ export function startVideoExport(
       }
 
       audioCtx = new AudioContext();
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
       const source = audioCtx.createMediaElementSource(audioEl);
       const analyser = audioCtx.createAnalyser();
       analyser.fftSize = 128;
       const dest = audioCtx.createMediaStreamDestination();
-      const gain = audioCtx.createGain();
-      gain.gain.value = 1.0;
+      const voiceGain = audioCtx.createGain();
+      voiceGain.gain.value = 1.0;
 
       source.connect(analyser);
-      analyser.connect(gain);
-      gain.connect(dest);
+      analyser.connect(voiceGain);
+      voiceGain.connect(dest);
+
+      let bgmGain: GainNode | null = null;
+      if (bgmEl && bgmReady) {
+        const bgmSource = audioCtx.createMediaElementSource(bgmEl);
+        bgmGain = audioCtx.createGain();
+        bgmGain.gain.value = Math.max(0, Math.min(1, settings.bgmVolume * 0.58));
+        bgmSource.connect(bgmGain);
+        bgmGain.connect(dest);
+      }
 
       const videoStream = canvas.captureStream(30);
       const combinedStream = new MediaStream([
@@ -129,9 +165,14 @@ export function startVideoExport(
 
       const freqData = new Uint8Array(analyser.frequencyBinCount);
       audioEl.currentTime = 0;
+      if (bgmEl && bgmReady) bgmEl.currentTime = 0;
       recorder.start(250);
       await audioEl.play();
+      if (bgmEl && bgmReady) {
+        bgmEl.play().catch(() => {});
+      }
 
+      let prevT = 0;
       const tick = () => {
         if (cancelled || !audioEl) return;
 
@@ -141,10 +182,29 @@ export function startVideoExport(
         for (let i = 0; i < freqData.length; i++) sum += freqData[i];
         const energy = Math.min(1, sum / (freqData.length * 140));
 
-        // Gentle audio fade out during final 0.25s
+        // Subtle dynamic ducking on BGM + final fade-out
+        if (bgmGain && audioCtx) {
+          const duck = 1 - energy * 0.22;
+          const tail = t > CLIP_DURATION - 1.5 ? Math.max(0, (CLIP_DURATION - t) / 1.5) : 1;
+          bgmGain.gain.setValueAtTime(
+            Math.max(0, Math.min(1, settings.bgmVolume * 0.58 * duck * tail)),
+            audioCtx.currentTime
+          );
+        }
+
+        // Mix synchronized 16-bit SFX directly into exported audio stream
+        if (audioCtx && settings.sfxVolume > 0.01) {
+          const sfxHits = collectTriggeredSfxCues(prevT, t);
+          for (let i = 0; i < sfxHits.length; i++) {
+            playSfxCue(audioCtx, dest, sfxHits[i], settings.sfxVolume);
+          }
+        }
+        prevT = t;
+
+        // Gentle voiceover fade out during final 0.25s
         if (t > CLIP_DURATION - 0.25 && audioCtx) {
           const rem = Math.max(0, (CLIP_DURATION - t) / 0.25);
-          gain.gain.setValueAtTime(rem, audioCtx.currentTime);
+          voiceGain.gain.setValueAtTime(rem, audioCtx.currentTime);
         }
 
         renderVideoFrame(ctx, canvas.width, canvas.height, t, cues, settings, energy);
@@ -152,6 +212,7 @@ export function startVideoExport(
 
         if (t >= CLIP_DURATION || audioEl.ended) {
           audioEl.pause();
+          bgmEl?.pause();
           if (recorder && recorder.state === 'recording') {
             recorder.stop();
           }

@@ -108,6 +108,8 @@ export interface RenderSettings {
   aspectRatio: AspectRatio;
   showSubtitles: boolean;
   motionIntensity: number; // 0.6 to 1.35
+  bgmVolume: number; // 0 to 1
+  sfxVolume: number; // 0 to 1
 }
 
 export interface ActiveTransition {

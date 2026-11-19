@@ -4,8 +4,10 @@ import { TimelineDock } from './components/TimelineDock';
 import { TopBar, type PanelTab } from './components/TopBar';
 import { VideoStage } from './components/VideoStage';
 import { renderVideoFrame } from './video/sceneRenderers';
+import { collectTriggeredSfxCues, playSfxCue } from './video/retroSfxEngine';
 import {
   AUDIO_SRC,
+  BGM_SRC,
   CLIP_DURATION,
   DEFAULT_30S_SRT,
   SRT_SRC,
@@ -44,6 +46,8 @@ export default function App() {
     aspectRatio: '16:9',
     showSubtitles: true,
     motionIntensity: 1.0,
+    bgmVolume: 0.36,
+    sfxVolume: 0.55,
   });
   const [exportStatus, setExportStatus] = useState<ExportStatus>({
     state: 'idle',
@@ -52,10 +56,12 @@ export default function App() {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const freqBufRef = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const liveEnergyRef = useRef<number | undefined>(undefined);
+  const isMutedRef = useRef(false);
   const stageContainerRef = useRef<HTMLDivElement | null>(null);
   const exportCtrlRef = useRef<ExportController | null>(null);
 
@@ -77,12 +83,22 @@ export default function App() {
 
   useEffect(() => {
     settingsRef.current = settings;
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.volume = clamp(settings.bgmVolume * 0.58, 0, 1);
+    }
   }, [settings]);
+
+  useEffect(() => {
+    isMutedRef.current = isMuted;
+  }, [isMuted]);
 
   useEffect(() => {
     playbackRateRef.current = playbackRate;
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackRate;
+    }
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.playbackRate = playbackRate;
     }
   }, [playbackRate]);
 
@@ -139,6 +155,9 @@ export default function App() {
     if (audioRef.current) {
       audioRef.current.pause();
     }
+    if (bgmAudioRef.current) {
+      bgmAudioRef.current.pause();
+    }
     setCurrentTime(currentTimeRef.current);
     setIsPlaying(false);
   }, []);
@@ -162,13 +181,27 @@ export default function App() {
       setIsPlaying(true);
 
       const audio = audioRef.current;
+      const bgm = bgmAudioRef.current;
       if (audio && isUserGesture) {
         audio.playbackRate = playbackRateRef.current;
         audio.muted = isMuted;
         audio.volume = 1;
+        if (bgm) {
+          bgm.playbackRate = playbackRateRef.current;
+          bgm.muted = isMuted;
+          bgm.volume = clamp(settingsRef.current.bgmVolume * 0.58, 0, 1);
+        }
         try {
           audio.currentTime = startAt;
+          if (bgm) {
+            try {
+              bgm.currentTime = startAt;
+            } catch {
+              // Ignore seek before metadata ready
+            }
+          }
           await audio.play();
+          bgm?.play().catch(() => {});
           usingAudioClockRef.current = true;
           tryAttachAudioAnalyser().catch(() => {});
         } catch {
@@ -203,6 +236,13 @@ export default function App() {
         // Ignore seek errors before metadata loads
       }
     }
+    if (bgmAudioRef.current) {
+      try {
+        bgmAudioRef.current.currentTime = clamped;
+      } catch {
+        // Ignore seek errors before metadata loads
+      }
+    }
   }, []);
 
   const handleRestart = useCallback(() => {
@@ -223,8 +263,12 @@ export default function App() {
   const handleToggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const next = !prev;
+      isMutedRef.current = next;
       if (audioRef.current) {
         audioRef.current.muted = next;
+      }
+      if (bgmAudioRef.current) {
+        bgmAudioRef.current.muted = next;
       }
       return next;
     });
@@ -303,6 +347,35 @@ export default function App() {
         liveEnergyRef.current = clamp(sum / (freqBufRef.current.length * 135), 0, 1);
       } else {
         liveEnergyRef.current = undefined;
+      }
+
+      const prevTime = currentTimeRef.current;
+
+      // Sync 5-act 16-bit BGM clock & gentle voice-over ducking
+      const bgm = bgmAudioRef.current;
+      if (bgm && usingAudioClockRef.current) {
+        if (bgm.paused && nextTime < CLIP_DURATION - 0.1) {
+          bgm.currentTime = nextTime;
+          bgm.play().catch(() => {});
+        } else if (Math.abs(bgm.currentTime - nextTime) > 0.28) {
+          try {
+            bgm.currentTime = nextTime;
+          } catch {
+            // Ignore drift resync errors
+          }
+        }
+        const duckFactor = 1 - (liveEnergyRef.current ?? 0.25) * 0.22;
+        const tailFade = nextTime > CLIP_DURATION - 1.5 ? clamp((CLIP_DURATION - nextTime) / 1.5, 0, 1) : 1;
+        bgm.volume = clamp(settingsRef.current.bgmVolume * 0.58 * duckFactor * tailFade, 0, 1);
+      }
+
+      // Trigger synchronized 16-bit transition & animation-beat SFX
+      const sfxCtx = audioCtxRef.current;
+      if (sfxCtx && sfxCtx.state === 'running' && !isMutedRef.current && settingsRef.current.sfxVolume > 0.01) {
+        const sfxHits = collectTriggeredSfxCues(prevTime, nextTime);
+        for (let i = 0; i < sfxHits.length; i++) {
+          playSfxCue(sfxCtx, sfxCtx.destination, sfxHits[i], settingsRef.current.sfxVolume);
+        }
       }
 
       if (nextTime >= CLIP_DURATION) {
@@ -420,10 +493,17 @@ export default function App() {
 
   return (
     <div className="min-h-screen lg:h-screen flex flex-col bg-[#07080B] text-zinc-100 overflow-x-hidden lg:overflow-hidden">
-      {/* Real Uploaded Voiceover Audio Element */}
+      {/* Real Uploaded Voiceover + 5-Act 16-Bit Soundtrack Audio Elements */}
       <audio
         ref={audioRef}
         src={AUDIO_SRC}
+        preload="auto"
+        crossOrigin="anonymous"
+        muted={isMuted}
+      />
+      <audio
+        ref={bgmAudioRef}
+        src={BGM_SRC}
         preload="auto"
         crossOrigin="anonymous"
         muted={isMuted}

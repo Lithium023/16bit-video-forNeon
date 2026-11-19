@@ -171,7 +171,8 @@ export function drawPixelSceneMultimodalAi(
   ]);
   pxStarfield(g, pw, ph, time, 36, 0.62);
 
-  // 4 Modality Cards radiating cleanly from central OMNI AI prism!
+  // 4 Modality Cards radiating cleanly from central OMNI AI prism on exact spoken cadence:
+  // "文本、图像、视频、音频"
   const cards: Array<{
     id: 'text' | 'image' | 'video' | 'audio';
     label: string;
@@ -180,88 +181,158 @@ export function drawPixelSceneMultimodalAi(
     color: string;
     at: number;
   }> = [
-    { id: 'text', label: 'TEXT', x: cx - 108, y: cy - 22, color: PAL.goldLight, at: 0.1 },
-    { id: 'image', label: 'IMAGE', x: cx + 108, y: cy - 22, color: PAL.tealLight, at: 0.7 },
-    { id: 'video', label: 'VIDEO', x: cx - 108, y: cy + 26, color: PAL.coralLight, at: 1.35 },
-    { id: 'audio', label: 'AUDIO', x: cx + 108, y: cy + 26, color: PAL.iceLight, at: 1.95 },
+    { id: 'text', label: 'TEXT', x: cx - 108, y: cy - 22, color: PAL.goldLight, at: 0.35 },
+    { id: 'image', label: 'IMAGE', x: cx + 108, y: cy - 22, color: PAL.tealLight, at: 0.95 },
+    { id: 'video', label: 'VIDEO', x: cx - 108, y: cy + 26, color: PAL.coralLight, at: 1.55 },
+    { id: 'audio', label: 'AUDIO', x: cx + 108, y: cy + 26, color: PAL.iceLight, at: 2.15 },
   ];
 
-  // Energy conduits linking center OMNI core to each modality
-  for (const c of cards) {
-    const p = easeOutExpo(clamp01((localTime - c.at) / 0.55));
-    if (p <= 0.02) continue;
-    const ex = Math.round(lerp(cx, c.x, p));
-    const ey = Math.round(lerp(cy, c.y, p));
-    pxLine(g, cx, cy, ex, ey, c.color, 2);
-    const dotT = (time * 1.8 + c.at) % 1;
-    pxRect(
-      g,
-      Math.round(lerp(cx, c.x, dotT)) - 1,
-      Math.round(lerp(cy, c.y, dotT)) - 1,
-      3,
-      3,
-      PAL.cream
-    );
-  }
-
-  // Draw the 4 modality pixel cards
   const cardW = 92;
   const cardH = 38;
-  for (const c of cards) {
-    const p = easeOutBack(clamp01((localTime - c.at) / 0.5), 1.15);
-    if (p <= 0.08) continue;
-    const x0 = c.x - Math.floor(cardW / 2);
-    const y0 = c.y - Math.floor(cardH / 2);
 
-    pxRect(g, x0, y0, cardW, cardH, '#0F1630');
-    pxOutline(g, x0, y0, cardW, cardH, c.color, 2);
+  // Pass 1: Staggered energy conduits shooting from OMNI core -> elastic card unfurl + progressive mini-icons!
+  for (let idx = 0; idx < cards.length; idx++) {
+    const c = cards[idx];
+    const dt = localTime - c.at;
+    if (dt <= 0) continue;
 
-    // Mini bespoke 16-bit icon on the left side of each card
-    const ix = x0 + 18;
-    const iy = c.y;
-    if (c.id === 'text') {
-      pxRect(g, ix - 9, iy - 10, 18, 20, PAL.cream);
-      pxRect(g, ix - 6, iy - 6, 12, 2, PAL.navyDark);
-      pxRect(g, ix - 6, iy - 1, 10, 2, PAL.goldDark);
-      pxRect(g, ix - 6, iy + 4, 12, 2, PAL.navyDark);
-    } else if (c.id === 'image') {
-      pxRect(g, ix - 10, iy - 9, 20, 18, '#1E4C6B');
-      pxOutline(g, ix - 10, iy - 9, 20, 18, PAL.tealLight, 1);
-      pxCircle(g, ix + 4, iy - 4, 3, PAL.goldLight);
-      pxLine(g, ix - 9, iy + 8, ix - 2, iy, PAL.tealLight, 2);
-      pxLine(g, ix - 2, iy, ix + 4, iy + 8, PAL.teal, 2);
-    } else if (c.id === 'video') {
-      pxRect(g, ix - 10, iy - 9, 20, 18, '#2B1B38');
-      pxOutline(g, ix - 10, iy - 9, 20, 18, PAL.coralLight, 1);
-      // Pixel play triangle
-      for (let r = -5; r <= 5; r++) {
-        const wTri = Math.max(1, 6 - Math.abs(r));
-        pxRect(g, ix - 3, iy + r, wTri, 1, PAL.goldLight);
-      }
+    const isLeft = c.x < cx;
+    const beamP = easeOutExpo(clamp01(dt / 0.3));
+    const cardRaw = clamp01((dt - 0.16) / 0.42);
+    const cardPop = easeOutBack(cardRaw, 1.25);
+    const iconP = easeOutCubic(clamp01((dt - 0.28) / 0.34));
+    const textP = clamp01((dt - 0.32) / 0.32);
+
+    const floatY = cardRaw >= 1 ? Math.round(Math.sin(time * 2.5 + idx * 1.5) * 1.2) : 0;
+    const targetY = c.y + floatY;
+    const dockX = isLeft ? c.x + Math.floor(cardW / 2) : c.x - Math.floor(cardW / 2);
+
+    // Stage 1: Colored conduit beam launching from OMNI prism with comet tip
+    const ex = Math.round(lerp(cx, dockX, beamP));
+    const ey = Math.round(lerp(cy, targetY, beamP));
+    pxLine(g, cx, cy, ex, ey, c.color, beamP < 0.95 ? 2 : 2);
+
+    if (beamP < 0.96) {
+      pxCircle(g, ex, ey, 3, PAL.cream);
+      pxRect(g, ex - 1, ey - 1, 2, 2, c.color);
     } else {
-      // Animated chiptune audio equalizer bars
-      for (let b = 0; b < 5; b++) {
-        const bh = 4 + Math.round(Math.abs(Math.sin(time * 9 + b * 1.1)) * (10 + energy * 4));
-        pxRect(g, ix - 10 + b * 4, iy + 9 - bh, 3, bh, b % 2 === 0 ? PAL.iceLight : PAL.tealLight);
+      const dotT = (time * 1.8 + idx * 0.28) % 1;
+      pxRect(
+        g,
+        Math.round(lerp(cx, dockX, dotT)) - 1,
+        Math.round(lerp(cy, targetY, dotT)) - 1,
+        3,
+        3,
+        PAL.cream
+      );
+    }
+
+    // Impact pixel shockwave ring when beam locks into modality slot
+    if (dt > 0.14 && dt < 0.68) {
+      const ringT = clamp01((dt - 0.14) / 0.54);
+      const ringR = Math.round(lerp(4, 22, easeOutCubic(ringT)));
+      if (ringT < 0.86) {
+        pxRing(g, c.x, targetY, ringR, ringT < 0.35 ? PAL.cream : c.color, 1);
       }
     }
 
-    pxBitmapText(g, c.label, x0 + 62, c.y, 1, c.color);
+    // Stage 2: Elastic slide-and-unfurl modality card
+    if (cardRaw > 0.02) {
+      const slideX = Math.round((1 - easeOutCubic(cardRaw)) * (isLeft ? 18 : -18));
+      const curW = Math.max(10, Math.min(cardW + 4, Math.round(lerp(10, cardW, Math.min(1.04, cardPop)))));
+      const curH = Math.max(6, Math.min(cardH + 2, Math.round(lerp(6, cardH, Math.min(1.04, cardPop)))));
+      const cardCx = c.x + slideX;
+      const x0 = cardCx - Math.floor(curW / 2);
+      const y0 = targetY - Math.floor(curH / 2);
+      const isFlash = dt > 0.16 && dt < 0.29;
+
+      if (dt > 0.16 && dt < 0.48) {
+        drawDitheredGlow(g, cardCx, targetY, Math.round(lerp(26, 10, (dt - 0.16) / 0.32)), c.color, 'light');
+      }
+
+      pxRect(g, x0, y0, curW, curH, isFlash ? '#202B52' : '#0F1630');
+      pxOutline(g, x0, y0, curW, curH, isFlash ? PAL.cream : c.color, 2);
+
+      // Stage 3: Animated mini 16-bit icon + rock-steady typewriter label
+      if (curW > cardW * 0.68 && curH > cardH * 0.68) {
+        const ix = x0 + 18;
+        const iy = targetY;
+        if (c.id === 'text') {
+          const docH = Math.max(4, Math.round(20 * iconP));
+          pxRect(g, ix - 9, iy - Math.floor(docH / 2), 18, docH, PAL.cream);
+          if (iconP > 0.4) {
+            pxRect(g, ix - 6, iy - 6, Math.round(12 * clamp01((iconP - 0.4) / 0.4)), 2, PAL.navyDark);
+            pxRect(g, ix - 6, iy - 1, Math.round(10 * clamp01((iconP - 0.55) / 0.35)), 2, PAL.goldDark);
+            pxRect(g, ix - 6, iy + 4, Math.round(12 * clamp01((iconP - 0.7) / 0.3)), 2, PAL.navyDark);
+          }
+        } else if (c.id === 'image') {
+          const imgH = Math.max(4, Math.round(18 * iconP));
+          pxRect(g, ix - 10, iy - Math.floor(imgH / 2), 20, imgH, '#1E4C6B');
+          pxOutline(g, ix - 10, iy - Math.floor(imgH / 2), 20, imgH, PAL.tealLight, 1);
+          if (iconP > 0.55) {
+            pxCircle(g, ix + 4, iy - 4, Math.max(1, Math.round(3 * clamp01((iconP - 0.55) / 0.45))), PAL.goldLight);
+            pxLine(g, ix - 9, iy + 8, ix - 2, iy, PAL.tealLight, 2);
+            pxLine(g, ix - 2, iy, ix + 4, iy + 8, PAL.teal, 2);
+          }
+        } else if (c.id === 'video') {
+          const vidH = Math.max(4, Math.round(18 * iconP));
+          pxRect(g, ix - 10, iy - Math.floor(vidH / 2), 20, vidH, '#2B1B38');
+          pxOutline(g, ix - 10, iy - Math.floor(vidH / 2), 20, vidH, PAL.coralLight, 1);
+          if (iconP > 0.45) {
+            const triScale = clamp01((iconP - 0.45) / 0.55);
+            const maxR = Math.round(5 * triScale);
+            for (let r = -maxR; r <= maxR; r++) {
+              const wTri = Math.max(1, maxR + 1 - Math.abs(r));
+              pxRect(g, ix - 3, iy + r, wTri, 1, PAL.goldLight);
+            }
+          }
+        } else {
+          // Animated chiptune audio equalizer bars springing upward
+          for (let b = 0; b < 5; b++) {
+            const barP = clamp01((iconP - b * 0.1) / 0.5);
+            const bh = Math.max(
+              1,
+              Math.round((4 + Math.abs(Math.sin(time * 9 + b * 1.1)) * (10 + energy * 4)) * barP)
+            );
+            pxRect(g, ix - 10 + b * 4, iy + 9 - bh, 3, bh, b % 2 === 0 ? PAL.iceLight : PAL.tealLight);
+          }
+        }
+
+        if (textP > 0.05) {
+          const chars = Math.max(1, Math.ceil(c.label.length * textP));
+          pxBitmapText(g, c.label.slice(0, chars).padEnd(c.label.length, ' '), x0 + 62, targetY, 1, c.color);
+        }
+      }
+
+      if (dt > 0.45) {
+        pxSparkle(g, x0 + curW - 5, y0 - 4, 2 + (Math.floor(time * 5 + idx) % 2), PAL.goldLight);
+      }
+    }
   }
 
-  // CENTER HERO: Radiant Rotating OMNI AI Crystal Prism!
-  drawDitheredGlow(g, cx, cy, Math.round(36 + energy * 10), PAL.goldLight, 'medium');
-  const pr = 22;
+  // Pass 2 (on top of beams): Radiant OMNI AI Crystal Prism blooming open on scene entry!
+  const prismPop = easeOutBack(clamp01(localTime / 0.42), 1.25);
+  const pr = Math.max(4, Math.round(22 * Math.min(1.06, prismPop)));
+
+  // Opening radial crystal pulse ring
+  if (localTime < 0.72) {
+    const pRingT = clamp01(localTime / 0.72);
+    pxRing(g, cx, cy, Math.round(lerp(6, 42, easeOutCubic(pRingT))), pRingT < 0.35 ? PAL.cream : PAL.tealLight, 1);
+  }
+
+  drawDitheredGlow(g, cx, cy, Math.round((36 + energy * 10) * Math.min(1, prismPop)), PAL.goldLight, 'medium');
   for (let dy = -pr; dy <= pr; dy++) {
     const half = pr - Math.abs(dy);
-    pxRect(g, cx - half, cy + dy, half * 2 + 1, 1, Math.abs(dy) < 10 ? '#1C2E52' : '#13203E');
+    pxRect(g, cx - half, cy + dy, half * 2 + 1, 1, Math.abs(dy) < Math.floor(pr * 0.45) ? '#1C2E52' : '#13203E');
   }
   pxLine(g, cx, cy - pr, cx + pr, cy, PAL.goldLight, 2);
   pxLine(g, cx + pr, cy, cx, cy + pr, PAL.tealLight, 2);
   pxLine(g, cx, cy + pr, cx - pr, cy, PAL.goldLight, 2);
   pxLine(g, cx - pr, cy, cx, cy - pr, PAL.tealLight, 2);
-  pxBitmapText(g, 'OMNI', cx, cy, 1, PAL.cream);
-  pxSparkle(g, cx, cy - pr - 6, 2 + (Math.floor(time * 5) % 2), PAL.goldLight);
+  if (prismPop > 0.65) {
+    pxBitmapText(g, 'OMNI', cx, cy, 1, PAL.cream);
+    pxSparkle(g, cx, cy - pr - 6, 2 + (Math.floor(time * 5) % 2), PAL.goldLight);
+  }
 }
 
 // ============================================================================
@@ -737,9 +808,9 @@ export function drawPixelSceneWinterAndBreakthrough(
   localTime: number,
   energy: number
 ): void {
-  const waveP = easeOutExpo(clamp01(localTime / 5.4));
-  const winterGlow = smoothstep(2.0, 3.6, localTime);
-  const surgeGlow = smoothstep(4.5, 6.2, localTime);
+  // Smooth continuous wave progression over 5.4s (slightly linear-eased so arrival beats feel rhythmic!)
+  const rawWave = clamp01(localTime / 5.4);
+  const waveP = lerp(rawWave, easeOutCubic(rawWave), 0.35);
 
   drawDitheredSky(g, pw, ph, [
     { stop: 0, color: '#091124' },
@@ -748,14 +819,21 @@ export function drawPixelSceneWinterAndBreakthrough(
   ]);
   pxStarfield(g, pw, ph, time, 32, 0.55);
 
-  // Subtle historical graph grid
+  // Animated historical graph grid sweeping in cleanly on scene entry
   const topBound = Math.floor(ph * 0.4);
   const midY = Math.floor(ph * 0.62);
   const botBound = Math.floor(ph * 0.79);
+  const gridP = easeOutExpo(clamp01(localTime / 0.65));
   for (let x = 24; x < pw - 20; x += 48) {
-    pxRect(g, x, topBound, 1, botBound - topBound, 'rgba(126, 212, 192, 0.12)');
+    const lineH = Math.round((botBound - topBound) * gridP);
+    if (lineH > 1) {
+      pxRect(g, x, topBound, 1, lineH, 'rgba(126, 212, 192, 0.12)');
+    }
   }
-  pxRect(g, 20, midY, pw - 40, 1, 'rgba(242, 180, 75, 0.22)');
+  const axisW = Math.round((pw - 40) * gridP);
+  if (axisW > 1) {
+    pxRect(g, 20, midY, axisW, 1, 'rgba(242, 180, 75, 0.24)');
+  }
 
   // 80-Year Rollercoaster Curve Points (1956 Peak -> Winter I -> 1980s -> Winter II -> 2012 DL -> 2026 LLM!)
   const pts: Array<{ x: number; y: number; tag: string; isWinter?: boolean }> = [
@@ -768,23 +846,82 @@ export function drawPixelSceneWinterAndBreakthrough(
     { x: pw - 32, y: topBound + 6, tag: '2026' },
   ];
 
-  // Draw glowing underground winter foundation crystals ("每一次寒冬都是技术的沉淀")!
-  for (const pt of pts) {
+  const segCount = pts.length - 1;
+  const maxSeg = waveP * segCount;
+
+  // Stage 1: Wave-synchronized Winter Crystal Precipitation ("每一次寒冬都是技术的沉淀")!
+  // Each winter trough only precipitates AFTER the wave comet reaches that valley!
+  for (let i = 0; i < pts.length; i++) {
+    const pt = pts[i];
     if (!pt.isWinter) continue;
-    if (winterGlow > 0.05) {
-      drawDitheredGlow(g, pt.x, pt.y + 6, Math.round(22 * winterGlow), PAL.iceLight, 'light');
-      // Crystalline foundation blocks accumulating below the valley floor
-      for (let b = -1; b <= 1; b++) {
-        pxRect(g, pt.x + b * 9 - 3, pt.y + 4, 6, 5, PAL.ice);
-        pxOutline(g, pt.x + b * 9 - 3, pt.y + 4, 6, 5, PAL.iceWhite, 1);
-      }
-      pxBitmapText(g, 'ROOTS', pt.x, pt.y + 15, 1, PAL.iceLight);
+    const arriveFrac = maxSeg - i; // becomes > 0 right as wave hits node i (i=2 for W1, i=4 for W2)
+    if (arriveFrac <= -0.08) continue;
+
+    const winterP = clamp01((arriveFrac + 0.08) / 0.85);
+    drawDitheredGlow(g, pt.x, pt.y + 6, Math.round(22 * easeOutCubic(winterP)), PAL.iceLight, 'light');
+
+    // Frost shockwave ring when the valley freezes & locks in
+    if (winterP > 0.02 && winterP < 0.72) {
+      const rT = winterP / 0.72;
+      pxRing(g, pt.x, pt.y + 4, Math.round(lerp(3, 18, easeOutCubic(rT))), PAL.iceWhite, 1);
+    }
+
+    // 3 crystalline foundation blocks dropping & crystallizing sequentially (-1, 0, +1)!
+    for (let b = -1; b <= 1; b++) {
+      const bIdx = b + 1;
+      const bRaw = clamp01((winterP - bIdx * 0.14) / 0.42);
+      if (bRaw <= 0.02) continue;
+      const bPop = easeOutBack(bRaw, 1.25);
+      const dropY = Math.round((1 - easeOutCubic(bRaw)) * -7);
+      const curS = Math.max(2, Math.min(6, Math.round(lerp(2, 6, Math.min(1.05, bPop)))));
+      const bx = pt.x + b * 9 - Math.floor(curS / 2);
+      const by = pt.y + 4 + dropY + Math.floor((5 - Math.min(5, curS)) / 2);
+      pxRect(g, bx, by, curS, Math.min(5, curS), bRaw < 0.35 ? PAL.iceWhite : PAL.ice);
+      pxOutline(g, bx, by, curS, Math.min(5, curS), PAL.iceWhite, 1);
+    }
+
+    // Rock-steady typewriter reveal for "ROOTS" once foundation blocks lock in
+    const rootsTextP = clamp01((winterP - 0.38) / 0.45);
+    if (rootsTextP > 0.05) {
+      const chars = Math.max(1, Math.ceil(5 * rootsTextP));
+      pxBitmapText(g, 'ROOTS'.slice(0, chars).padEnd(5, ' '), pt.x, pt.y + 15, 1, PAL.iceLight);
     }
   }
 
-  // Animated trajectory tracing across the 6 segments
-  const segCount = pts.length - 1;
-  const maxSeg = waveP * segCount;
+  // Stage 2: Rising Breakthrough Pillars ("每一次爆发都是底层逻辑的革新") erupting smoothly from ground!
+  // Triggered smoothly once the wave reaches 2012 (node 5) and 2026 (node 6)
+  const dlNode = pts[5];
+  const dlArrive = clamp01((maxSeg - 4.75) / 0.65);
+  if (dlArrive > 0.02) {
+    const beamTop = Math.round(lerp(botBound, dlNode.y + 5, easeOutExpo(dlArrive)));
+    pxLine(g, dlNode.x, botBound, dlNode.x, beamTop, 'rgba(126, 212, 192, 0.5)', 2);
+    if (dlArrive < 0.96) {
+      pxCircle(g, dlNode.x, beamTop, 2, PAL.cream);
+    }
+  }
+
+  const lastPt = pts[6];
+  const finalArrive = clamp01((maxSeg - 5.6) / 0.55);
+  const extraSurge = clamp01((localTime - 5.1) / 0.75);
+  const pillar2026 = Math.max(finalArrive, extraSurge);
+  if (pillar2026 > 0.02) {
+    const riseP = easeOutExpo(pillar2026);
+    const beamTop = Math.round(lerp(botBound, lastPt.y + 5, riseP));
+    drawDitheredGlow(g, lastPt.x, lastPt.y + 6, Math.round((26 + energy * 5) * riseP), PAL.goldLight, 'light');
+    pxLine(g, lastPt.x, botBound, lastPt.x, beamTop, 'rgba(255, 224, 138, 0.62)', 2);
+    if (riseP < 0.96) {
+      pxCircle(g, lastPt.x, beamTop, 3, PAL.cream);
+    }
+    if (localTime > 5.3 && localTime < 6.15) {
+      const burstT = clamp01((localTime - 5.3) / 0.85);
+      pxRing(g, lastPt.x, lastPt.y, Math.round(lerp(5, 26, easeOutCubic(burstT))), burstT < 0.4 ? PAL.cream : PAL.goldLight, 1);
+    }
+    if (riseP > 0.75) {
+      pxSparkle(g, lastPt.x, lastPt.y - 2, 3 + (Math.floor(time * 6) % 2), PAL.cream);
+    }
+  }
+
+  // Stage 3: Animated trajectory line + elastic pop-in year landmark tags!
   let headX = pts[0].x;
   let headY = pts[0].y;
 
@@ -800,21 +937,48 @@ export function drawPixelSceneWinterAndBreakthrough(
     headX = ex;
     headY = ey;
 
-    // Node landmark dot + year tag once passed
-    if (segFrac > 0.92 && !p1.isWinter) {
-      pxCircle(g, p1.x, p1.y, i >= 4 ? 4 : 3, i >= 4 ? PAL.goldLight : PAL.tealLight);
-      pxBitmapText(g, p1.tag, p1.x, p1.y - 10, 1, i >= 4 ? PAL.goldLight : PAL.creamDim);
-    }
-  }
+    // Animated landmark ping ring + elastic dot + rising typewriter year tag when passed!
+    const isFinal2026 = i === segCount - 1;
+    const passT = isFinal2026
+      ? Math.max(clamp01((maxSeg - 5.78) / 0.22) * 0.28, clamp01((localTime - 5.05) / 0.72))
+      : clamp01((maxSeg - (i + 0.9)) / 0.55);
+    if (passT > 0.02 && !p1.isWinter) {
+      const isPeakGold = i >= 4;
+      const dotR = Math.max(1, Math.round((isPeakGold ? 4 : 3) * Math.min(1.15, easeOutBack(passT, 1.3))));
+      pxCircle(g, p1.x, p1.y, dotR, isPeakGold ? PAL.goldLight : PAL.tealLight);
 
-  // Glowing golden breakthrough pillars erupting upward on "底层逻辑的革新"!
-  if (surgeGlow > 0.05) {
-    const lastPt = pts[pts.length - 1];
-    const dlPt = pts[pts.length - 2];
-    drawDitheredGlow(g, lastPt.x, lastPt.y + 4, Math.round(34 * surgeGlow + energy * 8), PAL.goldLight, 'medium');
-    pxLine(g, dlPt.x, botBound, dlPt.x, dlPt.y + 5, 'rgba(126, 212, 192, 0.45)', 2);
-    pxLine(g, lastPt.x, botBound, lastPt.x, lastPt.y + 5, 'rgba(255, 224, 138, 0.55)', 2);
-    pxSparkle(g, lastPt.x, lastPt.y - 2, 3 + (Math.floor(time * 6) % 2), PAL.cream);
+      if (passT < 0.75) {
+        const pR = Math.round(lerp(3, 14, easeOutCubic(passT / 0.75)));
+        pxRing(g, p1.x, p1.y, pR, isPeakGold ? PAL.cream : PAL.tealLight, 1);
+      }
+
+      const tagRise = Math.round((1 - easeOutCubic(passT)) * 5);
+      const chars = Math.max(1, Math.ceil(p1.tag.length * clamp01(passT / 0.75)));
+      const displayTag = p1.tag.slice(0, chars).padEnd(p1.tag.length, ' ');
+      const tagY = (isFinal2026 ? p1.y - 14 : p1.y - 10) + tagRise;
+
+      if (isFinal2026) {
+        // High-contrast 16-bit framed summit badge expanding smoothly so "2026" pops over the golden burst
+        const boxP = clamp01(passT / 0.55);
+        const boxW = Math.max(10, Math.round(32 * Math.min(1.06, easeOutBack(boxP, 1.2))));
+        const bx = Math.round(p1.x - boxW * 0.5);
+        pxRect(g, bx, tagY - 5, boxW, 11, '#091024');
+        pxOutline(g, bx, tagY - 5, boxW, 11, PAL.goldLight, 1);
+      } else {
+        pxBitmapText(g, displayTag, p1.x + 1, tagY + 1, 1, '#070C1D');
+      }
+
+      if (!isFinal2026 || passT > 0.24) {
+        pxBitmapText(
+          g,
+          displayTag,
+          p1.x,
+          tagY,
+          1,
+          isFinal2026 ? PAL.cream : isPeakGold ? PAL.goldLight : PAL.creamDim
+        );
+      }
+    }
   }
 
   // Glowing leading comet spark

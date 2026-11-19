@@ -105,7 +105,7 @@ export function EditorialPanel({
         <div className="mx-4 mt-3 p-3 rounded-md border border-amber-500/40 bg-amber-500/10 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs font-semibold text-amber-300">16-Bit 动效成片已生成</p>
-            <p className="text-[11px] text-zinc-400 truncate">含原声口播同步音轨 (WebM)</p>
+            <p className="text-[11px] text-zinc-400 truncate">含口播 + 16-Bit 章节配乐与音效 (WebM)</p>
           </div>
           <a
             href={exportStatus.downloadUrl}
@@ -274,6 +274,60 @@ export function EditorialPanel({
                 onChange={(e) => onUpdateSettings({ motionIntensity: Number(e.target.value) })}
                 className="w-full accent-amber-500 cursor-pointer"
               />
+            </div>
+
+            {/* Soundtrack & 16-Bit SFX Mix */}
+            <div className="border-t border-zinc-800/80 pt-4 space-y-3.5">
+              <div className="flex items-baseline justify-between gap-2">
+                <h3 className="text-xs font-semibold text-zinc-300">全片配乐与音效混音</h3>
+                <span className="text-[10px] text-zinc-500">5 幕 16-Bit 原声</span>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="bgm-volume" className="text-[11px] text-zinc-300">
+                    16-Bit 章节配乐 (BGM · 自动避让口播)
+                  </label>
+                  <span className="font-mono-tabular text-xs text-amber-400">
+                    {Math.round(settings.bgmVolume * 100)}%
+                  </span>
+                </div>
+                <input
+                  id="bgm-volume"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.02}
+                  value={settings.bgmVolume}
+                  onChange={(e) => onUpdateSettings({ bgmVolume: Number(e.target.value) })}
+                  className="w-full accent-amber-500 cursor-pointer"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="sfx-volume" className="text-[11px] text-zinc-300">
+                    复古像素转场与动效声效 (SFX)
+                  </label>
+                  <span className="font-mono-tabular text-xs text-amber-400">
+                    {Math.round(settings.sfxVolume * 100)}%
+                  </span>
+                </div>
+                <input
+                  id="sfx-volume"
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={settings.sfxVolume}
+                  onChange={(e) => onUpdateSettings({ sfxVolume: Number(e.target.value) })}
+                  className="w-full accent-amber-500 cursor-pointer"
+                />
+              </div>
+
+              <p className="text-[10px] leading-relaxed text-zinc-500">
+                配乐选自 BoxCat Games《Nameless: The Hackers RPG》5 首 CC BY 3.0 16-Bit 原声，按五大历史阶段平滑交叉淡入淡出，并叠加全片转场/动画卡点像素音效。
+              </p>
             </div>
 
             {/* Subtitle Layer Toggle */}

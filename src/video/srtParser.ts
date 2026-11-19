@@ -2,6 +2,7 @@ import type { SrtCue } from './types';
 
 export const CLIP_DURATION = 314.5;
 export const AUDIO_SRC = '/assets/aistudio/ai____3adc039f.MP3';
+export const BGM_SRC = '/assets/audio/bgm_16bit_master.mp3';
 export const SRT_SRC = '/assets/aistudio/ai____416e1634.srt';
 
 export const DEFAULT_60S_SRT = `1
